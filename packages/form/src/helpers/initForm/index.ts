@@ -1,4 +1,4 @@
-import { FormContext } from "@/context";
+import { FormContext } from "@/core/context";
 import { InitFormOptions } from "@/helpers/initForm/types";
 
 export const initForm = {
