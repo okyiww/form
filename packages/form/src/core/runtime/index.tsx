@@ -1,3 +1,4 @@
+import { FormContext } from "@/core/context";
 import Model from "@/core/lifecycle/Model";
 import Render from "@/core/lifecycle/Render";
 import Schema from "@/core/lifecycle/Schema";
@@ -6,14 +7,16 @@ import { Component } from "@/helpers/defineFormSetup/types";
 import { UseFormOptions } from "@/helpers/useForm/types";
 
 export default class Runtime {
-  private _schema: Schema;
-  private _model: Model;
-  private _render: Render;
-  private _update: Update;
-  private _options: UseFormOptions;
+  public _schema: Schema;
+  public _model: Model;
+  public _render: Render;
+  public _update: Update;
+  public _options: UseFormOptions;
+  public _context: FormContext;
 
   constructor(options: UseFormOptions) {
     this._options = options;
+    this._context = FormContext;
     this._schema = new Schema(this);
     this._model = new Model(this);
     this._render = new Render(this);
@@ -21,7 +24,6 @@ export default class Runtime {
   }
 
   render(): Component {
-    console.log("this", this);
     return <>Form renderer</>;
   }
 }
