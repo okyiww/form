@@ -1,0 +1,49 @@
+{
+  "name": "@okyiww/form",
+  "version": "0.0.0",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "type": "module",
+  "types": "./dist/types/index.d.ts",
+  "scripts": {
+    "dev": "nodemon -e .ts,.tsx --ignore dist --exec 'vite build --mode development'",
+    "build": "vue-tsc && vite build",
+    "release": "pnpm build --mode production && pnpm changeset publish"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist/"
+  ],
+  "author": "okyiww <okyiww@gmail.com>",
+  "repository": "okyiww/form",
+  "keywords": [
+    "form builder",
+    "vue",
+    "typescript"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@vitejs/plugin-vue-jsx": "^4.1.2",
+    "nodemon": "^3.1.9",
+    "vite": "^6.2.2",
+    "vite-plugin-dts": "^4.5.3",
+    "vue": "^3.5.13",
+    "vue-tsc": "^2.2.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.13"
+  },
+  "dependencies": {
+    "@changesets/changelog-git": "^0.2.1"
+  }
+}

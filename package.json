@@ -1,0 +1,17 @@
+{
+  "name": "form",
+  "version": "0.0.0",
+  "description": "form",
+  "scripts": {
+    "dev:form": "pnpm --filter @okyiww/form dev",
+    "dev:playground": "pnpm --filter playground dev",
+    "changeset": "changeset",
+    "version-packages": "changeset version"
+  },
+  "author": "okyiww <okyiww@gmail.com>",
+  "license": "MIT",
+  "packageManager": "pnpm@10.6.1",
+  "devDependencies": {
+    "@changesets/cli": "^2.28.1"
+  }
+}
