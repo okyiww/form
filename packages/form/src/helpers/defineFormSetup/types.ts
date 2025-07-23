@@ -18,7 +18,7 @@ export type Template = {
   };
 };
 
-export type defineFormSetupOptions = {
+export type DefineFormSetupOptions = {
   templates: Template[];
   default: {
     templateId: string;

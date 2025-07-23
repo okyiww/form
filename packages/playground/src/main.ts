@@ -3,6 +3,7 @@ import App from "./App";
 import { initForm } from "@okyiww/form";
 import { createPinia } from "pinia";
 import ArcoVue from "@arco-design/web-vue";
+import "@arco-design/web-vue/dist/arco.css";
 
 const app = createApp(App);
 const pinia = createPinia();

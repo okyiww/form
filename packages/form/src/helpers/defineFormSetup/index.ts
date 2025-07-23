@@ -1,5 +1,5 @@
-import { defineFormSetupOptions } from "@/helpers/defineFormSetup/types";
+import { DefineFormSetupOptions } from "@/helpers/defineFormSetup/types";
 
-export function defineFormSetup(options: defineFormSetupOptions) {
+export function defineFormSetup(options: DefineFormSetupOptions) {
   return options;
 }

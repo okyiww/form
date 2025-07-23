@@ -5,6 +5,9 @@ import path from "path";
 
 export default defineConfig({
   plugins: [vue(), vueJSX()],
+  server: {
+    port: 9751,
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

@@ -24,6 +24,6 @@ export default class Runtime {
   }
 
   render(): Component {
-    return <>Form renderer</>;
+    return this._render.render();
   }
 }

@@ -1,3 +1,5 @@
+import { DefineFormSetupOptions } from "@/helpers/defineFormSetup/types";
+
 export type FormSetupLoader = () => Promise<{
-  default: any;
+  default: DefineFormSetupOptions;
 }>;
