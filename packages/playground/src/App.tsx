@@ -58,6 +58,28 @@ export default defineComponent({
               native: {
                 mockdata: () => "for testing",
               },
+              deepercase: {
+                names: [
+                  {
+                    value: () =>
+                      new Promise((resolve) => {
+                        setTimeout(() => {
+                          resolve("Evan Huang");
+                        }, 1000);
+                      }),
+                    age: {
+                      value: () => "23",
+                      rawValue: raw(() => "23"),
+                      promisedValue: () =>
+                        new Promise((resolve) => {
+                          setTimeout(() => {
+                            resolve("23");
+                          }, 1000);
+                        }),
+                    },
+                  },
+                ],
+              },
             },
           ],
         },

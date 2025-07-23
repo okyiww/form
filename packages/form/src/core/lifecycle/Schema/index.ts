@@ -81,7 +81,11 @@ export default class Schema {
   parseSchema(schema: any, metadata: Metadata) {
     Object.keys(schema).forEach((propertyKey) => {
       const propertyValue = schema[propertyKey];
-      this.parseProperty(propertyKey, propertyValue, metadata);
+
+      // 这里解构 metadata，避免下层数据在深度递归的场景下发生污染
+      this.parseProperty(propertyKey, propertyValue, {
+        ...metadata,
+      });
     });
   }
 
@@ -102,9 +106,11 @@ export default class Schema {
     merge(metadata, {
       propertyKey,
       processedSetter(processedValue: any) {
-        metadata.setter(processedValue, this);
+        metadata.setter(processedValue, metadata);
       },
     });
+
+    // 解开 metadata 避免数据污染
     this.processing(propertyValue, metadata);
   }
 
@@ -128,9 +134,8 @@ export default class Schema {
       const executionRes = value();
 
       if (isPromise(executionRes)) {
-        let originMetadata = cloneDeep(metadata);
         executionRes.then((res: any) => {
-          this.processingNonFunction(res, originMetadata);
+          this.processingNonFunction(res, metadata);
         });
         return;
       }
@@ -156,10 +161,10 @@ export default class Schema {
       if (isNumericString(propertyKey)) {
         propertyKey = `[${propertyKey}]`;
       }
-      this.parseSchema(value, {
-        ...metadata,
-        path: `${metadata.path}.${propertyKey}`,
-      });
+
+      // 更新 path，方便后续更新正确的 schema 位置
+      metadata.path = `${metadata.path}.${propertyKey}`;
+      this.parseSchema(value, metadata);
       return;
     }
 
