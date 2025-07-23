@@ -12,7 +12,7 @@ export default defineComponent({
           label: "姓名",
           field: "name",
           component: Input,
-          defaultValue: "Evan",
+          defaultValue: () => "Evan",
         },
         {
           label: "基本情况",
@@ -35,7 +35,12 @@ export default defineComponent({
           children: [
             {
               label: () => "爱好内容",
-              defaultValue: "football",
+              defaultValue: () =>
+                new Promise((resolve) => {
+                  setTimeout(() => {
+                    resolve("football");
+                  }, 1000);
+                }),
               field: () => "content",
               component: () => <Select />,
               componentProps: {

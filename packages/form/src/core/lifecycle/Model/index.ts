@@ -1,6 +1,8 @@
 import { Metadata } from "@/core/lifecycle/Schema/types";
 import Runtime from "@/core/runtime";
 
+// 需要考虑的是创建类型？，创建什么样的类型
+
 export default class Model {
   constructor(runtime: Runtime) {}
 
@@ -19,49 +21,37 @@ export default class Model {
   processRelation(metadata: Metadata, value: any) {
     if (
       !metadata.propertyKey ||
-      !["defaultValue", "field"].includes(metadata.propertyKey)
-    )
+      !["defaultValue", "field", "type"].includes(metadata.propertyKey)
+    ) {
       return;
-
+    }
+    if (metadata.propertyKey === "type" && value === "group") {
+      return;
+    }
     const mayBeRelation = this.relationMap.get(metadata.path);
-    let hasRelation = false;
+    let allowConsume = false;
     let skipConsume = false;
-    if (mayBeRelation && mayBeRelation.isConsumed === false) {
-      if (
-        ("defaultValue" in mayBeRelation && metadata.propertyKey === "field") ||
-        ("field" in mayBeRelation && metadata.propertyKey === "defaultValue")
-      ) {
-        hasRelation = true;
-      }
-      if (
-        ("defaultValue" in mayBeRelation &&
-          metadata.propertyKey === "defaultValue") ||
-        ("field" in mayBeRelation && metadata.propertyKey === "field")
-      ) {
-        hasRelation = false;
-      }
-    } else if (mayBeRelation && mayBeRelation.isConsumed === true) {
+    if (mayBeRelation && mayBeRelation.isConsumed === true) {
       skipConsume = true;
     }
 
     if (skipConsume) {
       return;
-    } else if (!hasRelation) {
-      this.relationMap.set(metadata.path, {
-        [metadata.propertyKey]: value,
-        isConsumed: false,
-      });
-      return;
-    } else {
-      if (mayBeRelation.isConsumed) {
-        return;
-      }
+    } else if (!allowConsume) {
       this.relationMap.set(metadata.path, {
         ...this.relationMap.get(metadata.path),
         [metadata.propertyKey]: value,
         isConsumed: false,
       });
-      this.consumeRelation(metadata.path);
+      const latestRelation = this.relationMap.get(metadata.path);
+      if (
+        "defaultValue" in latestRelation &&
+        "field" in latestRelation &&
+        "type" in latestRelation
+      ) {
+        this.consumeRelation(metadata.path);
+      }
+      return;
     }
   }
 

@@ -8,7 +8,15 @@ import {
 } from "@/core/services";
 import { RawSchemas } from "@/helpers/defineFormSchema/types";
 import { isRaw } from "@/index";
-import { cloneDeep, get, isFunction, isObject, merge, set } from "lodash";
+import {
+  cloneDeep,
+  get,
+  isFunction,
+  isObject,
+  isUndefined,
+  merge,
+  set,
+} from "lodash";
 import { Ref, ref, watch } from "vue";
 
 export default class Schema {
@@ -18,20 +26,6 @@ export default class Schema {
   constructor(public runtime: Runtime) {
     this.rawSchemas = cloneDeep(runtime._options.schemas);
     this.traverseSchemas(runtime._options.schemas);
-
-    setTimeout(() => {
-      console.log("出发了更新");
-      set(this.parsedSchemas.value, `[2].children[0].componentProps.options`, [
-        {
-          label: "篮球",
-          value: "basketball",
-        },
-        {
-          label: "足球",
-          value: "football",
-        },
-      ]);
-    }, 3000);
 
     watch(
       () => this.parsedSchemas.value,
@@ -57,6 +51,12 @@ export default class Schema {
         : `[${key}]`;
 
       const schema = get(schemas, path);
+
+      // 这里是为了方便后续的消费处理初始化 model 做准备
+      if (isUndefined(schema.type)) {
+        schema.type = "item";
+      }
+
       this.parseSchema(schema, {
         path,
         setter: (processedValue, metadata) => {
@@ -101,8 +101,8 @@ export default class Schema {
   parseProperty(propertyKey: string, propertyValue: any, metadata: Metadata) {
     merge(metadata, {
       propertyKey,
-      processedSetter: (processedValue: any) => {
-        metadata.setter(processedValue, metadata);
+      processedSetter(processedValue: any) {
+        metadata.setter(processedValue, this);
       },
     });
     this.processing(propertyValue, metadata);
@@ -128,9 +128,11 @@ export default class Schema {
       const executionRes = value();
 
       if (isPromise(executionRes)) {
-        return executionRes.then((res: any) => {
-          this.processingNonFunction(res, metadata);
+        let originMetadata = cloneDeep(metadata);
+        executionRes.then((res: any) => {
+          this.processingNonFunction(res, originMetadata);
         });
+        return;
       }
 
       return this.processingNonFunction(executionRes, metadata);
