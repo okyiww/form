@@ -17,10 +17,10 @@ export default class Runtime {
   constructor(options: UseFormOptions) {
     this._options = options;
     this._context = FormContext;
-    this._schema = new Schema(this);
     this._model = new Model(this);
     this._render = new Render(this);
     this._update = new Update(this);
+    this._schema = new Schema(this);
   }
 
   render(): Component {

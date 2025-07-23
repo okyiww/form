@@ -1,6 +1,6 @@
 import { defineComponent } from "vue";
 import { version, useForm, defineFormSchema, raw } from "@okyiww/form";
-import { Input } from "@arco-design/web-vue";
+import { Input, Select } from "@arco-design/web-vue";
 
 export default defineComponent({
   setup() {
@@ -12,6 +12,7 @@ export default defineComponent({
           label: "姓名",
           field: "name",
           component: Input,
+          defaultValue: "Evan",
         },
         {
           label: "基本情况",
@@ -34,10 +35,20 @@ export default defineComponent({
           children: [
             {
               label: () => "爱好内容",
+              defaultValue: "football",
               field: () => "content",
-              component: () => <Input />,
+              component: () => <Select />,
               componentProps: {
-                wordLength: raw((value: string) => value.length),
+                options: [
+                  {
+                    label: "篮球",
+                    value: "basketball",
+                  },
+                  {
+                    label: "足球",
+                    value: "football",
+                  },
+                ],
               },
               native: {
                 mockdata: () => "for testing",

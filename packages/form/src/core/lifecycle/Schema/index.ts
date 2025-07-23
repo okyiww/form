@@ -1,10 +1,15 @@
 import { Metadata, ParsedSchemas } from "@/core/lifecycle/Schema/types";
 import Runtime from "@/core/runtime";
-import { traverse, isPromise, isValidComponent } from "@/core/services";
+import {
+  traverse,
+  isPromise,
+  isValidComponent,
+  isNumericString,
+} from "@/core/services";
 import { RawSchemas } from "@/helpers/defineFormSchema/types";
 import { isRaw } from "@/index";
 import { cloneDeep, get, isFunction, isObject, merge, set } from "lodash";
-import { Ref, ref } from "vue";
+import { Ref, ref, watch } from "vue";
 
 export default class Schema {
   rawSchemas: RawSchemas;
@@ -15,8 +20,33 @@ export default class Schema {
     this.traverseSchemas(runtime._options.schemas);
 
     setTimeout(() => {
-      console.log("traverseSchemas", this.parsedSchemas.value);
-    }, 1000);
+      console.log("出发了更新");
+      set(this.parsedSchemas.value, `[2].children[0].componentProps.options`, [
+        {
+          label: "篮球",
+          value: "basketball",
+        },
+        {
+          label: "足球",
+          value: "football",
+        },
+      ]);
+    }, 3000);
+
+    watch(
+      () => this.parsedSchemas.value,
+      (value) => {
+        console.log("value", value);
+        console.log(
+          "this.runtime._model.relationMap",
+          this.runtime._model.relationMap
+        );
+      },
+      {
+        deep: true,
+        immediate: true,
+      }
+    );
   }
 
   // I hope this function can only be called once
@@ -30,6 +60,7 @@ export default class Schema {
       this.parseSchema(schema, {
         path,
         setter: (processedValue, metadata) => {
+          this.runtime._model.processRelation(metadata, processedValue);
           set(
             this.parsedSchemas.value,
             `${metadata.path}.${metadata.propertyKey}`,
@@ -116,9 +147,16 @@ export default class Schema {
 
     // 到了这一步，可以认为这些 object，都是要深度进行处理的，因为 raw 和 component 已经在前面给搞定了
     if (isObject(value)) {
+      let propertyKey = metadata.propertyKey!;
+
+      // 这个处理是为了防止在收集 field 和 defaultValue 的时候重复进行收集，因为 xxx.0 和 xxx.[0] 其实都是一个 schema，但是会被
+      // 错误的收集两次
+      if (isNumericString(propertyKey)) {
+        propertyKey = `[${propertyKey}]`;
+      }
       this.parseSchema(value, {
         ...metadata,
-        path: `${metadata.path}.${metadata.propertyKey}`,
+        path: `${metadata.path}.${propertyKey}`,
       });
       return;
     }
