@@ -18,5 +18,5 @@ export function raw(value: any) {
 }
 
 export function isRaw(value: any) {
-  return value.__okyiww_form_raw__ === true;
+  return value?.__okyiww_form_raw__ === true;
 }

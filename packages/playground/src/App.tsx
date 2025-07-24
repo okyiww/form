@@ -10,13 +10,22 @@ export default defineComponent({
       schemas: defineFormSchema([
         {
           label: "姓名",
-          field: "name",
+          field: () =>
+            new Promise((resolve) => {
+              setTimeout(() => {
+                resolve("name");
+              }, 2000);
+            }),
           component: Input,
-          defaultValue: () => "Evan",
         },
         {
           label: "基本情况",
-          type: "group",
+          type: () =>
+            new Promise((resolve) => {
+              setTimeout(() => {
+                resolve("group");
+              }, 1000);
+            }),
           children: [
             {
               label: "年龄",
@@ -25,13 +34,50 @@ export default defineComponent({
               componentProps: {
                 hello: "world",
               },
+              defaultValue: () => "23",
             },
           ],
         },
         {
+          label: "近期活动",
+          field: () =>
+            new Promise((resolve) => {
+              setTimeout(() => {
+                resolve("recent-activities");
+              }, 3000);
+            }),
+          component: () => <Select />,
+          defaultValue: () =>
+            new Promise((resolve) => {
+              setTimeout(() => {
+                resolve([
+                  {
+                    event: "buy xxx",
+                  },
+                ]);
+              }, 5000);
+            }),
+        },
+        {
           label: "爱好",
-          type: "list",
-          field: "hobbies",
+          type: () =>
+            new Promise((resolve) => {
+              setTimeout(() => {
+                resolve("list");
+              }, 2000);
+            }),
+          field: () =>
+            new Promise((resolve) => {
+              setTimeout(() => {
+                resolve("hobbies");
+              }, 4000);
+            }),
+          defaultValue: () =>
+            new Promise((resolve) => {
+              setTimeout(() => {
+                resolve([{ content: "hyper" }]);
+              }, 1000);
+            }),
           children: [
             {
               label: () => "爱好内容",

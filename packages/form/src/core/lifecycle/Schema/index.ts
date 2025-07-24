@@ -12,7 +12,7 @@ import {
   cloneDeep,
   get,
   isFunction,
-  isObject,
+  isPlainObject,
   isUndefined,
   merge,
   set,
@@ -30,11 +30,7 @@ export default class Schema {
     watch(
       () => this.parsedSchemas.value,
       (value) => {
-        console.log("value", value);
-        console.log(
-          "this.runtime._model.relationMap",
-          this.runtime._model.relationMap
-        );
+        // console.log("value", value);
       },
       {
         deep: true,
@@ -61,6 +57,22 @@ export default class Schema {
         path,
         setter: (processedValue, metadata) => {
           this.runtime._model.processRelation(metadata, processedValue);
+
+          // 这里的预期是在确定有 field 的情况下去正确为没有提供 defaultValue 的 schema 提供 undefined 便于后续的消费
+          if (
+            metadata.propertyKey === "field" &&
+            isUndefined(schema.defaultValue)
+          ) {
+            schema.defaultValue = undefined;
+            // 立即触发一次消费，模拟不存在 defaultValue 在当前 schema 被处理成稳定的 undefined 之后的效果
+            this.runtime._model.processRelation(
+              {
+                ...metadata,
+                propertyKey: "defaultValue",
+              },
+              undefined
+            );
+          }
           set(
             this.parsedSchemas.value,
             `${metadata.path}.${metadata.propertyKey}`,
@@ -153,7 +165,8 @@ export default class Schema {
     }
 
     // 到了这一步，可以认为这些 object，都是要深度进行处理的，因为 raw 和 component 已经在前面给搞定了
-    if (isObject(value)) {
+
+    if (isPlainObject(value)) {
       let propertyKey = metadata.propertyKey!;
 
       // 这个处理是为了防止在收集 field 和 defaultValue 的时候重复进行收集，因为 xxx.0 和 xxx.[0] 其实都是一个 schema，但是会被

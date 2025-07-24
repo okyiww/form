@@ -1,5 +1,6 @@
 import { Metadata } from "@/core/lifecycle/Schema/types";
 import Runtime from "@/core/runtime";
+import { cloneDeep } from "lodash";
 
 // 需要考虑的是创建类型？，创建什么样的类型
 
@@ -39,6 +40,7 @@ export default class Model {
       return;
     } else if (!allowConsume) {
       this.relationMap.set(metadata.path, {
+        metadata,
         ...this.relationMap.get(metadata.path),
         [metadata.propertyKey]: value,
         isConsumed: false,
@@ -56,11 +58,12 @@ export default class Model {
   }
 
   consumeRelation(path: string) {
+    console.log("当前 map 状况", cloneDeep(this.relationMap));
     // 消费关系
     const relation = this.relationMap.get(path);
 
     // 消费
-    console.log("消费", relation);
+    this.consume(relation);
 
     // 设置消费状态
     this.relationMap.set(path, {
@@ -69,5 +72,12 @@ export default class Model {
     });
   }
 
-  // 等所有的都处理完之后，消费剩余的关系，这些关系一定是没有提供 defaultValue 的
+  /**
+   * 让我们先来明确一些现状
+   * 由于整个解析过程是无状态无依赖无顺序的，所以我们并不清楚谁先来后到，所以在这种场景下，数据一定要非常的干净有逻辑
+   * 1、首先无 field 的类型不会被计入 ralationMap
+   */
+  consume(relation: Record<string, any>) {
+    console.log("relation", relation);
+  }
 }
