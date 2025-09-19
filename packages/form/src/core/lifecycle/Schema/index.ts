@@ -18,7 +18,7 @@ import {
   merge,
   set,
 } from "lodash";
-import { Ref, ref, watch } from "vue";
+import { nextTick, Ref, ref, watch } from "vue";
 
 export default class Schema {
   rawSchemas: RawSchemas;
@@ -29,20 +29,9 @@ export default class Schema {
     this.traverseSchemas(runtime._options.schemas);
 
     watch(
-      () => this.parsedSchemas.value,
-      (schema) => {
-        // console.log("schema", schema);
-      },
-      {
-        deep: true,
-        immediate: true,
-      }
-    );
-
-    watch(
       () => this.runtime._model.model.value,
-      (model) => {
-        this.traverseSchemas(runtime._options.schemas);
+      () => {
+        this.traverseSchemas(cloneDeep(this.rawSchemas));
       },
       {
         immediate: true,

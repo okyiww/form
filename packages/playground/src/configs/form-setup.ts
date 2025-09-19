@@ -1,6 +1,8 @@
-import Group from "@/configs/layouts/Group";
 import Item from "@/configs/layouts/Item";
-import { Form, FormItem, List } from "@arco-design/web-vue";
+import Group from "@/configs/layouts/Group";
+import List from "@/configs/layouts/List";
+import ListItem from "@/configs/layouts/ListItem";
+import { Form, FormItem } from "@arco-design/web-vue";
 import { defineFormSetup } from "@okyiww/form";
 
 export default defineFormSetup({
@@ -15,6 +17,7 @@ export default defineFormSetup({
           Item,
           Group,
           List,
+          ListItem,
         },
       },
     },

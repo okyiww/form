@@ -1,0 +1,20 @@
+.list {
+  border: 1px solid #e1e2e3;
+  border-radius: 8px;
+
+  .header {
+    height: 40px;
+    border-bottom: 1px solid #e1e2e3;
+    display: flex;
+    align-items: center;
+    padding: 16px;
+  }
+
+  .addButton {
+    margin-left: auto;
+  }
+
+  .content {
+    padding: 24px;
+  }
+}

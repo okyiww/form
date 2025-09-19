@@ -1,6 +1,6 @@
 import { Metadata } from "@/core/lifecycle/Schema/types";
 import Runtime from "@/core/runtime";
-import { checkRelations } from "@/core/services";
+import { checkRelations, isPromise } from "@/core/services";
 import { cloneDeep, get, reverse, set } from "lodash";
 import { ref } from "vue";
 
@@ -28,7 +28,9 @@ export default class Model {
   processRelation(metadata: Metadata, value: any) {
     if (
       !metadata.propertyKey ||
-      !["defaultValue", "field", "type"].includes(metadata.propertyKey)
+      !["defaultValue", "field", "type"].includes(metadata.propertyKey) ||
+      // 这里是为了防止像 componentProps 中或者什么 slots 中也出现 type 被当作类别来处理
+      !metadata.path.endsWith("]")
     ) {
       return;
     }
@@ -107,7 +109,6 @@ export default class Model {
         // 这里也有两种情况
         // 1、这时候 list field 已经存在，那么只需要往存在的数据中去更新
         // 2、这时候 list 的 field 还未知，我们也不知道要更新到什么地方，所以这个更新是一个悬垂的状态
-
         this.resolveRelations(reverse(checkResult.existingRelations));
       }
     } else {
@@ -132,8 +133,20 @@ export default class Model {
   resolveRelations(relations: Record<string, any>[], basePath?: string) {
     if (relations.length === 0) return;
     const { current, parent } = relations[0];
-
     if (!current.field) return;
+    // 如果有 field 但是没有 defaultValue 说明 defaultValue 是异步处理，但 field 已经有了，所以可以不阻塞继续往下走
+    if (!("defaultValue" in current)) {
+      relations.shift();
+      this.resolveRelations(
+        [...relations],
+        basePath
+          ? `${basePath}.[0].${current.field}`
+          : !parent
+          ? current.field
+          : `[0].${current.field}`
+      );
+      return;
+    }
 
     if (!current.isConsumed) {
       set(
@@ -155,9 +168,16 @@ export default class Model {
     );
   }
 
+  isAllConsumed() {
+    return Array.from(this.relationMap.values()).every((relation) => {
+      return relation.isConsumed;
+    });
+  }
+
   checkingConsume() {
-    // 检测 relationMap 里每一项都 "defaultValue" "type" "field" in 整个 flow
-    Object.values(this.relationMap.values()).forEach((relation) => {
+    // 检测 relationMap 里每一项都有 "defaultValue" "type" "field"
+
+    for (const relation of this.relationMap.values()) {
       if (
         "defaultValue" in relation &&
         "type" in relation &&
@@ -165,11 +185,9 @@ export default class Model {
       ) {
         relation.isConsumed = true;
       }
-    });
-    const allConsumed = Object.values(this.relationMap.values()).every(
-      (relation) => relation.isConsumed
-    );
-    if (allConsumed) {
+    }
+
+    if (this.isAllConsumed()) {
       this.immutableModel = cloneDeep(this.model.value);
     }
   }

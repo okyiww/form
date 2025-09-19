@@ -6,17 +6,17 @@ export default defineComponent({
   props: {},
   setup(props, { slots }) {
     return () => (
-      <div class={styles.list}>
-        <div class={styles.header}>
-          {slots.add?.({
+      <div class={styles.listItem}>
+        <div class={styles.content}>{slots.default?.()}</div>
+        <div class={styles.footer}>
+          {slots.delete?.({
             render: () => (
-              <Button class={styles.addButton} type="primary">
-                添加
+              <Button class={styles.deleteButton} type="primary">
+                删除
               </Button>
             ),
           })}
         </div>
-        <div class={styles.content}>{slots.default?.()}</div>
       </div>
     );
   },

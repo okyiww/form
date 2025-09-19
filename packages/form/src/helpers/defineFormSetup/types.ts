@@ -14,6 +14,7 @@ export type Template = {
       Item: Component;
       Group: Component;
       List: Component;
+      ListItem: Component;
     };
   };
 };
