@@ -10,13 +10,110 @@ export default defineComponent({
       schemas: defineFormSchema([
         {
           label: "姓名",
-          field: () =>
-            new Promise((resolve) => {
-              setTimeout(() => {
-                resolve("name");
-              }, 2000);
-            }),
+          field: "name",
+          defaultValue: () => "Evan Huang",
           component: Input,
+        },
+        {
+          type: "list",
+          field: "firstlevel",
+          children: [
+            {
+              field: "seconlevel",
+              type: "list",
+              children: [
+                {
+                  component: Input,
+                  field: "secondlevel-value",
+                },
+                {
+                  type: "list",
+                  field: () =>
+                    new Promise((resolve) => {
+                      setTimeout(() => {
+                        resolve("thirdlevel");
+                      }, 200);
+                    }),
+                  defaultValue: () =>
+                    new Promise((resolve) => {
+                      setTimeout(() => {
+                        resolve([{ hello: "world" }]);
+                      }, 200);
+                    }),
+                  children: [
+                    {
+                      component: Input,
+                      field: "thirdlevel-value",
+                      defaultValue: () =>
+                        new Promise((resolve) => {
+                          setTimeout(() => {
+                            resolve("Evan");
+                          }, 300);
+                        }),
+                    },
+                    {
+                      type: "list",
+                      field: "fourthlevel",
+                      children: [
+                        {
+                          component: Input,
+                          field: "fourthlevel-value",
+                          defaultValue: () =>
+                            new Promise((resolve) => {
+                              setTimeout(() => {
+                                resolve("Evan2");
+                              }, 500);
+                            }),
+                        },
+                        {
+                          field: "hi",
+                          component: Input,
+                          defaultValue: () =>
+                            new Promise((resolve) => {
+                              setTimeout(() => {
+                                resolve("Evan4");
+                              }, 600);
+                            }),
+                        },
+                        {
+                          type: "list",
+                          field: "fifthlevel",
+                          children: [
+                            {
+                              component: Input,
+                              field: "fifthlevel-value",
+                              defaultValue: () =>
+                                new Promise((resolve) => {
+                                  setTimeout(() => {
+                                    resolve("Evan35");
+                                  }, 400);
+                                }),
+                            },
+                            {
+                              type: "list",
+                              field: "sixthlevel",
+                              children: [
+                                {
+                                  component: Input,
+                                  field: "sixthlevel-value",
+                                  defaultValue: () =>
+                                    new Promise((resolve) => {
+                                      setTimeout(() => {
+                                        resolve("Evan36");
+                                      }, 500);
+                                    }),
+                                },
+                              ],
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
         },
         {
           label: "基本情况",
@@ -47,25 +144,33 @@ export default defineComponent({
               }, 3000);
             }),
           component: () => <Select />,
+          componentProps: {
+            options: [
+              {
+                label: "for the testing",
+                value: "buy xxx",
+              },
+              {
+                label: "for the testing2",
+                value: "buy xxx2",
+              },
+            ],
+          },
           defaultValue: () =>
             new Promise((resolve) => {
               setTimeout(() => {
-                resolve([
-                  {
-                    event: "buy xxx",
-                  },
-                ]);
+                resolve("buy xxx");
               }, 5000);
             }),
         },
         {
           label: "爱好",
           type: () =>
-            new Promise((resolve) => {
+            new Promise((resolve) =>
               setTimeout(() => {
                 resolve("list");
-              }, 2000);
-            }),
+              }, 2000)
+            ),
           field: () =>
             new Promise((resolve) => {
               setTimeout(() => {
@@ -75,12 +180,21 @@ export default defineComponent({
           defaultValue: () =>
             new Promise((resolve) => {
               setTimeout(() => {
-                resolve([{ content: "hyper" }]);
-              }, 1000);
+                resolve([
+                  { content: "hyper", else: "ok" },
+                  { content: "2s", else: "ok2s" },
+                ]);
+              }, 2000);
             }),
           children: [
             {
               label: () => "爱好内容",
+              type: () =>
+                new Promise((resolve) =>
+                  setTimeout(() => {
+                    resolve("item");
+                  }, 3000)
+                ),
               defaultValue: () =>
                 new Promise((resolve) => {
                   setTimeout(() => {
@@ -126,6 +240,30 @@ export default defineComponent({
                   },
                 ],
               },
+            },
+          ],
+        },
+        {
+          label: "清洁的初始化测试",
+          type: "list",
+          field: "clean-init-test",
+          defaultValue: () =>
+            new Promise((resolve) => {
+              setTimeout(() => {
+                resolve([{ content: "clean-init-test-child" }]);
+              }, 2000);
+            }),
+          children: [
+            {
+              label: "清洁的初始化测试-child",
+              field: "content",
+              component: () => <Input />,
+              defaultValue: () =>
+                new Promise((resolve) => {
+                  setTimeout(() => {
+                    resolve("clean-init-test-child, in okyiww form");
+                  }, 3000);
+                }),
             },
           ],
         },

@@ -4,7 +4,8 @@ import {
   traverse,
   isPromise,
   isValidComponent,
-  isNumericString,
+  isNumericLike,
+  wrapperNumericLike,
 } from "@/core/services";
 import { RawSchemas } from "@/helpers/defineFormSchema/types";
 import { isRaw } from "@/index";
@@ -29,12 +30,23 @@ export default class Schema {
 
     watch(
       () => this.parsedSchemas.value,
-      (value) => {
-        // console.log("value", value);
+      (schema) => {
+        // console.log("schema", schema);
       },
       {
         deep: true,
         immediate: true,
+      }
+    );
+
+    watch(
+      () => this.runtime._model.model.value,
+      (model) => {
+        console.log("model", cloneDeep(model));
+      },
+      {
+        immediate: true,
+        deep: true,
       }
     );
   }
@@ -43,8 +55,8 @@ export default class Schema {
   traverseSchemas(schemas: RawSchemas) {
     traverse(schemas, (_, key, parentKey) => {
       const path = parentKey
-        ? `${`[${parentKey}]`}.children.${`[${key}]`}`
-        : `[${key}]`;
+        ? `${wrapperNumericLike(parentKey)}.children.${wrapperNumericLike(key)}`
+        : wrapperNumericLike(key);
 
       const schema = get(schemas, path);
 
@@ -65,6 +77,7 @@ export default class Schema {
           ) {
             schema.defaultValue = undefined;
             // 立即触发一次消费，模拟不存在 defaultValue 在当前 schema 被处理成稳定的 undefined 之后的效果
+            // ，从而推进处理流程，避免中断
             this.runtime._model.processRelation(
               {
                 ...metadata,
@@ -171,12 +184,8 @@ export default class Schema {
 
       // 这个处理是为了防止在收集 field 和 defaultValue 的时候重复进行收集，因为 xxx.0 和 xxx.[0] 其实都是一个 schema，但是会被
       // 错误的收集两次
-      if (isNumericString(propertyKey)) {
-        propertyKey = `[${propertyKey}]`;
-      }
-
       // 更新 path，方便后续更新正确的 schema 位置
-      metadata.path = `${metadata.path}.${propertyKey}`;
+      metadata.path = `${metadata.path}.${wrapperNumericLike(propertyKey)}`;
       this.parseSchema(value, metadata);
       return;
     }

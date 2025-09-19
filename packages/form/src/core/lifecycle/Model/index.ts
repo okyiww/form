@@ -1,6 +1,8 @@
 import { Metadata } from "@/core/lifecycle/Schema/types";
 import Runtime from "@/core/runtime";
-import { cloneDeep } from "lodash";
+import { checkRelations } from "@/core/services";
+import { reverse, set } from "lodash";
+import { ref } from "vue";
 
 // 需要考虑的是创建类型？，创建什么样的类型
 
@@ -16,6 +18,8 @@ export default class Model {
 
   // 关系表，用于收集 field 和 defaultValue 的对应关系, key 是 path
   relationMap = new Map<string, any>();
+
+  model = ref<Record<string, any>>({});
 
   // 默认是记录关系，如果检测到同 path 的 defaultValue 和 field 都已经稳定 processed，那么则可以消费记录
   // 消费记录只需要给是否消费的标记置为 true
@@ -58,7 +62,6 @@ export default class Model {
   }
 
   consumeRelation(path: string) {
-    console.log("当前 map 状况", cloneDeep(this.relationMap));
     // 消费关系
     const relation = this.relationMap.get(path);
 
@@ -68,16 +71,85 @@ export default class Model {
     // 设置消费状态
     this.relationMap.set(path, {
       ...relation,
-      isConsumed: true,
     });
   }
 
   /**
    * 让我们先来明确一些现状
    * 由于整个解析过程是无状态无依赖无顺序的，所以我们并不清楚谁先来后到，所以在这种场景下，数据一定要非常的干净有逻辑
-   * 1、首先无 field 的类型不会被计入 ralationMap
+   * 1、无 field 的类型不会被计入 ralationMap
+   * 2、如果一个消费关系的 path 包含了 children，那么它可能是在 group 里，也可能是在 list 里
+   * 3、如果一个消费关系的 path 包含了 children，并且 relationMap 中存在 path 是当前 path 的前缀，那么它一定是在 list 里
+   * 4、同理，如果找不到这样的前缀，那么它一定是在 group 里
    */
   consume(relation: Record<string, any>) {
-    console.log("relation", relation);
+    const path = relation.metadata.path;
+
+    if (path.includes("children")) {
+      /**
+       * 需要区分是 group 还是 list，group 则使用普通的消费逻辑，list 则需要更复杂的逻辑
+       * 对于 list 来说，如果当前 model
+       */
+      const checkResult = checkRelations(this.relationMap, path);
+
+      if (!checkResult.isListChild) {
+        // 对于 group 类型下的数据，直接消费
+
+        this.model.value[relation.field] = relation.defaultValue;
+        return;
+      }
+
+      // 初始化或者依次获取当前 model 里的状态
+      // 这里也有两种情况
+      // 1、这时候 list field 已经存在，那么只需要往存在的数据中去更新
+      // 2、这时候 list 的 field 还未知，我们也不知道要更新到什么地方，所以这个更新是一个悬垂的状态
+
+      this.resolveRelations(reverse(checkResult.existingRelations));
+
+      return;
+    }
+
+    // 普通消费逻辑
+    this.model.value[relation.field] = relation.defaultValue;
+
+    /**
+     * 每次都检测一下，当所有的消费均已完成时，则可以留存一份永远不会被改变的 model，这个 model 是初始化 model 的最终结果，便于
+     * 后续实现重置逻辑或者是 list 的添加逻辑等
+     */
+    this.todo();
   }
+
+  defaultValueCalcByType(type: string) {
+    if (type === "list") {
+      return [];
+    }
+    return undefined;
+  }
+
+  resolveRelations(relations: Record<string, any>[], basePath?: string) {
+    if (relations.length === 0) return;
+    const { current, parent } = relations[0];
+
+    if (!current.field) return;
+    if (!current.isConsumed) {
+      set(
+        this.model.value,
+        `${basePath ? `${basePath}.[0].${current.field}` : `${current.field}`}`,
+        current.defaultValue ?? this.defaultValueCalcByType(current.type)
+      );
+      current.isConsumed = true;
+    }
+
+    relations.shift();
+    this.resolveRelations(
+      [...relations],
+      basePath
+        ? `${basePath}.[0].${current.field}`
+        : !parent
+        ? current.field
+        : `[0].${current.field}`
+    );
+  }
+
+  todo() {}
 }

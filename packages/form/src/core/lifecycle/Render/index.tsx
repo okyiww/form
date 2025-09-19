@@ -1,6 +1,7 @@
 import { FormContext } from "@/core/context";
 import { ParsedSchema } from "@/core/lifecycle/Schema/types";
 import Runtime from "@/core/runtime";
+import { get, set } from "lodash";
 import { defineComponent } from "vue";
 
 export default class Render {
@@ -24,7 +25,13 @@ export default class Render {
     const Component = schema.component;
     return (
       <this.meta.FormItem field={schema.field} label={schema.label}>
-        <Component />
+        <Component
+          {...schema.componentProps}
+          modelValue={get(this.runtime._model.model.value, schema.field)}
+          onUpdate:modelValue={(value: any) => {
+            set(this.runtime._model.model.value, schema.field, value);
+          }}
+        ></Component>
       </this.meta.FormItem>
     );
   }
@@ -43,8 +50,8 @@ export default class Render {
       setup: () => {
         return () => (
           <this.meta.Form>
-            {this.runtime._schema.parsedSchemas.value.map(
-              this.renderParsedSchema.bind(this)
+            {this.runtime._schema.parsedSchemas.value.map((schema) =>
+              this.renderParsedSchema.bind(this)(schema)
             )}
           </this.meta.Form>
         );

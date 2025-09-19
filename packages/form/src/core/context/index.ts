@@ -1,5 +1,5 @@
 import { DefineFormSetupOptions } from "@/helpers/defineFormSetup/types";
-import { FormSetupLoader } from "./types";
+import { FormSetupLoader } from "../lifecycle/types";
 import { keyBy } from "lodash";
 
 export class FormContext {

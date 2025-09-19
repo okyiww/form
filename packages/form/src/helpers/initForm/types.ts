@@ -1,4 +1,4 @@
-import { FormSetupLoader } from "@/core/context/types";
+import { FormSetupLoader } from "@/core/lifecycle/types";
 
 export type InitFormOptions = {
   loader: FormSetupLoader;
