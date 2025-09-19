@@ -23,6 +23,8 @@ export default class Model {
 
   immutableModel = {};
 
+  allConsumed = ref(false);
+
   // 默认是记录关系，如果检测到同 path 的 defaultValue 和 field 都已经稳定 processed，那么则可以消费记录
   // 消费记录只需要给是否消费的标记置为 true
   processRelation(metadata: Metadata, value: any) {
@@ -169,9 +171,11 @@ export default class Model {
   }
 
   isAllConsumed() {
-    return Array.from(this.relationMap.values()).every((relation) => {
+    return (this.allConsumed.value = Array.from(
+      this.relationMap.values()
+    ).every((relation) => {
       return relation.isConsumed;
-    });
+    }));
   }
 
   checkingConsume() {

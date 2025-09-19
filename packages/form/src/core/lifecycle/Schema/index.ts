@@ -4,7 +4,6 @@ import {
   traverse,
   isPromise,
   isValidComponent,
-  isNumericLike,
   wrapperNumericLike,
 } from "@/core/services";
 import { RawSchemas } from "@/helpers/defineFormSchema/types";
@@ -18,20 +17,23 @@ import {
   merge,
   set,
 } from "lodash";
-import { nextTick, Ref, ref, watch } from "vue";
+import { Ref, ref, watch } from "vue";
 
 export default class Schema {
   rawSchemas: RawSchemas;
   parsedSchemas: Ref<ParsedSchemas> = ref([]);
+  EffectedSchemas = new Map();
 
   constructor(public runtime: Runtime) {
     this.rawSchemas = cloneDeep(runtime._options.schemas);
-    this.traverseSchemas(runtime._options.schemas);
+    this.traverseSchemas(cloneDeep(runtime._options.schemas));
 
     watch(
       () => this.runtime._model.model.value,
       () => {
-        this.traverseSchemas(cloneDeep(this.rawSchemas));
+        for (const effect of this.EffectedSchemas.values()) {
+          effect();
+        }
       },
       {
         immediate: true,
@@ -75,6 +77,7 @@ export default class Schema {
               undefined
             );
           }
+
           set(
             this.parsedSchemas.value,
             `${metadata.path}.${metadata.propertyKey}`,
@@ -145,6 +148,23 @@ export default class Schema {
     }
 
     if (isFunction(value)) {
+      const effectKey = `${metadata.path}.${metadata.propertyKey}`;
+      if (!this.EffectedSchemas.has(effectKey)) {
+        this.EffectedSchemas.set(effectKey, () => {
+          const executionRes = value({
+            model: this.runtime._model.model.value,
+          });
+          if (isPromise(executionRes)) {
+            executionRes.then((res: any) => {
+              this.processingNonFunction(res, cloneDeep(metadata));
+            });
+
+            return;
+          }
+
+          return this.processingNonFunction(executionRes, cloneDeep(metadata));
+        });
+      }
       const executionRes = value({
         model: this.runtime._model.model.value,
       });
@@ -153,6 +173,7 @@ export default class Schema {
         executionRes.then((res: any) => {
           this.processingNonFunction(res, metadata);
         });
+
         return;
       }
 

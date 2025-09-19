@@ -1,6 +1,6 @@
-import { isObject } from "lodash";
+import { isPlainObject } from "lodash";
 
 export function isValidComponent(propertyKey: string | undefined, value: any) {
   if (!propertyKey) return false;
-  return propertyKey === "component" && isObject(value);
+  return propertyKey === "component" && isPlainObject(value);
 }

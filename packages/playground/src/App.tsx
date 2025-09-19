@@ -33,107 +33,107 @@ export default defineComponent({
         //   component: ({ model }) =>
         //     model.nameold?.length > 10 ? Input : Select,
         // },
-        // {
-        //   type: "list",
-        //   field: "firstlevel",
-        //   children: [
-        //     {
-        //       field: "seconlevel",
-        //       type: "list",
-        //       children: [
-        //         {
-        //           component: Input,
-        //           field: "secondlevel-value",
-        //         },
-        //         {
-        //           type: "list",
-        //           field: () =>
-        //             new Promise((resolve) => {
-        //               setTimeout(() => {
-        //                 resolve("thirdlevel");
-        //               }, 200);
-        //             }),
-        //           defaultValue: () =>
-        //             new Promise((resolve) => {
-        //               setTimeout(() => {
-        //                 resolve([{ hello: "world" }]);
-        //               }, 200);
-        //             }),
-        //           children: [
-        //             {
-        //               component: Input,
-        //               field: "thirdlevel-value",
-        //               defaultValue: () =>
-        //                 new Promise((resolve) => {
-        //                   setTimeout(() => {
-        //                     resolve("Evan");
-        //                   }, 300);
-        //                 }),
-        //             },
-        //             {
-        //               type: "list",
-        //               field: "fourthlevel",
-        //               children: [
-        //                 {
-        //                   component: Input,
-        //                   field: "fourthlevel-value",
-        //                   defaultValue: () =>
-        //                     new Promise((resolve) => {
-        //                       setTimeout(() => {
-        //                         resolve("Evan2");
-        //                       }, 500);
-        //                     }),
-        //                 },
-        //                 {
-        //                   field: "hi",
-        //                   component: Input,
-        //                   defaultValue: () =>
-        //                     new Promise((resolve) => {
-        //                       setTimeout(() => {
-        //                         resolve("Evan4");
-        //                       }, 600);
-        //                     }),
-        //                 },
-        //                 {
-        //                   type: "list",
-        //                   field: "fifthlevel",
-        //                   children: [
-        //                     {
-        //                       component: Input,
-        //                       field: "fifthlevel-value",
-        //                       defaultValue: () =>
-        //                         new Promise((resolve) => {
-        //                           setTimeout(() => {
-        //                             resolve("Evan35");
-        //                           }, 400);
-        //                         }),
-        //                     },
-        //                     {
-        //                       type: "list",
-        //                       field: "sixthlevel",
-        //                       children: [
-        //                         {
-        //                           component: Input,
-        //                           field: "sixthlevel-value",
-        //                           defaultValue: () =>
-        //                             new Promise((resolve) => {
-        //                               setTimeout(() => {
-        //                                 resolve("Evan36");
-        //                               }, 500);
-        //                             }),
-        //                         },
-        //                       ],
-        //                     },
-        //                   ],
-        //                 },
-        //               ],
-        //             },
-        //           ],
-        //         },
-        //       ],
-        //     },
-        //   ],
-        // },
+        {
+          type: "list",
+          field: "firstlevel",
+          children: [
+            {
+              field: "seconlevel",
+              type: "list",
+              children: [
+                {
+                  component: Input,
+                  field: "secondlevel-value",
+                },
+                {
+                  type: "list",
+                  field: () =>
+                    new Promise((resolve) => {
+                      setTimeout(() => {
+                        resolve("thirdlevel");
+                      }, 200);
+                    }),
+                  defaultValue: () =>
+                    new Promise((resolve) => {
+                      setTimeout(() => {
+                        resolve([{ hello: "world" }]);
+                      }, 200);
+                    }),
+                  children: [
+                    {
+                      component: Input,
+                      field: "thirdlevel-value",
+                      defaultValue: () =>
+                        new Promise((resolve) => {
+                          setTimeout(() => {
+                            resolve("Evan");
+                          }, 300);
+                        }),
+                    },
+                    {
+                      type: "list",
+                      field: "fourthlevel",
+                      children: [
+                        {
+                          component: Input,
+                          field: "fourthlevel-value",
+                          defaultValue: () =>
+                            new Promise((resolve) => {
+                              setTimeout(() => {
+                                resolve("Evan2");
+                              }, 500);
+                            }),
+                        },
+                        {
+                          field: "hi",
+                          component: Input,
+                          defaultValue: () =>
+                            new Promise((resolve) => {
+                              setTimeout(() => {
+                                resolve("Evan4");
+                              }, 600);
+                            }),
+                        },
+                        {
+                          type: "list",
+                          field: "fifthlevel",
+                          children: [
+                            {
+                              component: Input,
+                              field: "fifthlevel-value",
+                              defaultValue: () =>
+                                new Promise((resolve) => {
+                                  setTimeout(() => {
+                                    resolve("Evan35");
+                                  }, 400);
+                                }),
+                            },
+                            {
+                              type: "list",
+                              field: "sixthlevel",
+                              children: [
+                                {
+                                  component: Input,
+                                  field: "sixthlevel-value",
+                                  defaultValue: () =>
+                                    new Promise((resolve) => {
+                                      setTimeout(() => {
+                                        resolve("Evan36");
+                                      }, 500);
+                                    }),
+                                },
+                              ],
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
         // {
         //   label: "基本情况",
         //   type: () =>
@@ -261,68 +261,68 @@ export default defineComponent({
         //     },
         //   ],
         // },
-        {
-          label: "禁用",
-          component: () => <Input />,
-          field: "disabled",
-        },
-        {
-          label: "禁用2",
-          component: () => <Input />,
-          field: "disabled2",
-          componentProps: {
-            disabled: ({ model }) => {
-              return !!model.disabled;
-            },
-          },
-        },
-        {
-          label: "测试",
-          type: "list",
-          field: "clean-parent-test",
-          defaultValue: () =>
-            new Promise((resolve) => {
-              setTimeout(() => {
-                resolve([
-                  {
-                    content: "clean-init-test-child",
-                    "clean-child-test": "clean-init-test-child, in okyiww form",
-                  },
-                ]);
-              }, 1000);
-            }),
-          children: [
-            {
-              label: "测试-child",
-              field: "clean-child-test",
-              component: Input,
-              // defaultValue: "halo",
-              defaultValue: () =>
-                new Promise((resolve) => {
-                  setTimeout(() => {
-                    resolve("clean-init-test-123child, in okyiww form");
-                  }, 2000);
-                }),
-              componentProps: {
-                disabled: ({ model }) => {
-                  return !!model.disabled;
-                },
-                type: ({ model }) => (!!model.disabled ? "password" : "text"),
-              },
-            },
-            {
-              label: "测试-child2",
-              field: "content",
-              component: () => <Input />,
-              defaultValue: () =>
-                new Promise((resolve) => {
-                  setTimeout(() => {
-                    resolve("最后一个触发应该");
-                  }, 3000);
-                }),
-            },
-          ],
-        },
+        // {
+        //   label: "禁用",
+        //   component: Input,
+        //   field: "disabled",
+        // },
+        // {
+        //   label: "禁用2",
+        //   component: () => <Input />,
+        //   field: "disabled2",
+        //   componentProps: {
+        //     disabled: ({ model }) => {
+        //       return !!model.disabled;
+        //     },
+        //   },
+        // },
+        // {
+        //   label: "测试",
+        //   type: "list",
+        //   field: "clean-parent-test",
+        //   defaultValue: () =>
+        //     new Promise((resolve) => {
+        //       setTimeout(() => {
+        //         resolve([
+        //           {
+        //             content: "clean-init-test-child",
+        //             "clean-child-test": "clean-init-test-child, in okyiww form",
+        //           },
+        //         ]);
+        //       }, 1000);
+        //     }),
+        //   children: [
+        //     {
+        //       label: "测试-child",
+        //       field: "clean-child-test",
+        //       component: Input,
+        //       // defaultValue: "halo",
+        //       defaultValue: () =>
+        //         new Promise((resolve) => {
+        //           setTimeout(() => {
+        //             resolve("clean-init-test-123child, in okyiww form");
+        //           }, 2000);
+        //         }),
+        //       componentProps: {
+        //         disabled: ({ model }) => {
+        //           return !!model.disabled;
+        //         },
+        //         type: ({ model }) => (!!model.disabled ? "password" : "text"),
+        //       },
+        //     },
+        //     {
+        //       label: "测试-child2",
+        //       field: "content",
+        //       component: () => <Input />,
+        //       defaultValue: () =>
+        //         new Promise((resolve) => {
+        //           setTimeout(() => {
+        //             resolve("最后一个触发应该");
+        //           }, 3000);
+        //         }),
+        //     },
+        //   ],
+        // },
       ]),
     });
 

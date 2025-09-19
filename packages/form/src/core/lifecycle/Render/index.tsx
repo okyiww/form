@@ -2,7 +2,7 @@ import { FormContext } from "@/core/context";
 import { ParsedSchema } from "@/core/lifecycle/Schema/types";
 import Runtime from "@/core/runtime";
 import { cloneDeep, get, set } from "lodash";
-import { defineComponent, ref, watch } from "vue";
+import { defineComponent, ref, toRaw, unref, watch } from "vue";
 
 export default class Render {
   public meta;
@@ -25,7 +25,7 @@ export default class Render {
     schema: ParsedSchema,
     modelSource = this.runtime._model.model.value
   ) {
-    const Component = schema.component;
+    const Component = toRaw(schema.component);
     return (
       <this.meta.FormItem field={schema.field} label={schema.label}>
         <Component
@@ -39,11 +39,13 @@ export default class Render {
     );
   }
 
-  renderListSchema(schema: ParsedSchema) {
+  renderListSchema(
+    schema: ParsedSchema,
+    modelSource = this.runtime._model.model.value,
+    baseModelPath?: string
+  ) {
     // 这里使用 [{}] 是因为便于快速渲染出第一个空节点，避免因为还没处理完成导致页面一直不展示内容
-    const listModel = get(this.runtime._model.model.value, schema.field) ?? [
-      {},
-    ];
+    const listModel = get(modelSource, schema.field) ?? [{}];
     return (
       <this.meta.layouts.List>
         {{
@@ -53,7 +55,13 @@ export default class Render {
                 {{
                   default: () => {
                     return schema.children.map((childSchema: any) => {
-                      return this.renderItemSchema(childSchema, model);
+                      return this.renderParsedSchema(
+                        childSchema,
+                        model,
+                        baseModelPath
+                          ? `${baseModelPath}.${schema.field}.[${0}]`
+                          : `${schema.field}.[${0}]`
+                      );
                     });
                   },
                   delete: ({ render }: any) => {
@@ -61,7 +69,7 @@ export default class Render {
                     return (
                       listModel.length > 1 && (
                         <Delete
-                          disabled={!this.runtime._model.isAllConsumed()}
+                          disabled={!this.runtime._model.allConsumed.value}
                           onClick={() => {
                             listModel.splice(listModel.indexOf(model), 1);
                           }}
@@ -77,12 +85,18 @@ export default class Render {
             const Add = render();
             return (
               <Add
-                disabled={!this.runtime._model.isAllConsumed()}
+                disabled={!this.runtime._model.allConsumed.value}
                 onClick={() => {
-                  const toBeAdded = cloneDeep(
-                    this.runtime._model.immutableModel as any
-                  )?.[schema.field]?.[0];
-                  this.runtime._model.model.value[schema.field].push(toBeAdded);
+                  const baseModel = `${
+                    baseModelPath
+                      ? `${baseModelPath}.${schema.field}.[0]`
+                      : `${schema.field}.[0]`
+                  }`;
+                  const toBeAdded = get(
+                    this.runtime._model.immutableModel,
+                    baseModel
+                  );
+                  modelSource[schema.field].push(cloneDeep(toBeAdded));
                 }}
               />
             );
@@ -92,16 +106,20 @@ export default class Render {
     );
   }
 
-  renderParsedSchema(schema: ParsedSchema) {
+  renderParsedSchema(
+    schema: ParsedSchema,
+    modelSource = this.runtime._model.model.value,
+    baseModelPath?: string
+  ) {
     switch (schema.type) {
       case "item":
-        return this.renderItemSchema(schema);
+        return this.renderItemSchema(schema, modelSource);
       case "group":
-        return this.renderItemSchema(schema);
+        return this.renderItemSchema(schema, modelSource);
       case "list":
-        return this.renderListSchema(schema);
+        return this.renderListSchema(schema, modelSource, baseModelPath);
       default:
-        return this.renderItemSchema(schema);
+        return this.renderItemSchema(schema, modelSource);
     }
   }
 
