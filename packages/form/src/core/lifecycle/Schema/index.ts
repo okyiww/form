@@ -42,7 +42,7 @@ export default class Schema {
     watch(
       () => this.runtime._model.model.value,
       (model) => {
-        console.log("model", cloneDeep(model));
+        this.traverseSchemas(runtime._options.schemas);
       },
       {
         immediate: true,
@@ -156,7 +156,9 @@ export default class Schema {
     }
 
     if (isFunction(value)) {
-      const executionRes = value();
+      const executionRes = value({
+        model: this.runtime._model.model.value,
+      });
 
       if (isPromise(executionRes)) {
         executionRes.then((res: any) => {

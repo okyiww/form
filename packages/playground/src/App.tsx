@@ -10,9 +10,27 @@ export default defineComponent({
       schemas: defineFormSchema([
         {
           label: "姓名",
+          field: "nameold",
+          component: Input,
+          defaultValue: () => "Evan Huang",
+        },
+        {
+          label: "年龄",
+          field: "age",
+          component: Input,
+          defaultValue: () => "231223801928",
+          componentProps: {
+            type: ({ model }) => {
+              return model.name?.length > 10 ? "text" : "password";
+            },
+          },
+        },
+        {
+          label: "姓名",
           field: "name",
           defaultValue: () => "Evan Huang",
-          component: Input,
+          component: ({ model }) =>
+            model.nameold?.length > 10 ? Input : Select,
         },
         {
           type: "list",
@@ -175,18 +193,17 @@ export default defineComponent({
             new Promise((resolve) => {
               setTimeout(() => {
                 resolve("hobbies");
-              }, 4000);
+              }, 0);
             }),
-          defaultValue: () =>
-            new Promise((resolve) => {
-              setTimeout(() => {
-                resolve([
-                  { content: "hyper", else: "ok" },
-                  { content: "2s", else: "ok2s" },
-                ]);
-              }, 2000);
-            }),
+
           children: [
+            {
+              label: "爱好测试",
+              field: "testing",
+              defaultValue: {
+                what: "12?",
+              },
+            },
             {
               label: () => "爱好内容",
               type: () =>

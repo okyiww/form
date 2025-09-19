@@ -1,7 +1,7 @@
 import { Metadata } from "@/core/lifecycle/Schema/types";
 import Runtime from "@/core/runtime";
 import { checkRelations } from "@/core/services";
-import { reverse, set } from "lodash";
+import { cloneDeep, get, reverse, set } from "lodash";
 import { ref } from "vue";
 
 // 需要考虑的是创建类型？，创建什么样的类型
@@ -20,6 +20,8 @@ export default class Model {
   relationMap = new Map<string, any>();
 
   model = ref<Record<string, any>>({});
+
+  immutableModel = {};
 
   // 默认是记录关系，如果检测到同 path 的 defaultValue 和 field 都已经稳定 processed，那么则可以消费记录
   // 消费记录只需要给是否消费的标记置为 true
@@ -64,13 +66,17 @@ export default class Model {
   consumeRelation(path: string) {
     // 消费关系
     const relation = this.relationMap.get(path);
+    if (relation.processedPath) {
+      return;
+    }
 
     // 消费
     this.consume(relation);
 
-    // 设置消费状态
+    // 设置基于 path 的处理状态
     this.relationMap.set(path, {
       ...relation,
+      processedPath: true,
     });
   }
 
@@ -84,39 +90,36 @@ export default class Model {
    */
   consume(relation: Record<string, any>) {
     const path = relation.metadata.path;
+    const checkResult = checkRelations(this.relationMap, path);
 
     if (path.includes("children")) {
       /**
        * 需要区分是 group 还是 list，group 则使用普通的消费逻辑，list 则需要更复杂的逻辑
        * 对于 list 来说，如果当前 model
        */
-      const checkResult = checkRelations(this.relationMap, path);
 
       if (!checkResult.isListChild) {
         // 对于 group 类型下的数据，直接消费
 
         this.model.value[relation.field] = relation.defaultValue;
-        return;
+      } else {
+        // 初始化或者依次获取当前 model 里的状态
+        // 这里也有两种情况
+        // 1、这时候 list field 已经存在，那么只需要往存在的数据中去更新
+        // 2、这时候 list 的 field 还未知，我们也不知道要更新到什么地方，所以这个更新是一个悬垂的状态
+
+        this.resolveRelations(reverse(checkResult.existingRelations));
       }
-
-      // 初始化或者依次获取当前 model 里的状态
-      // 这里也有两种情况
-      // 1、这时候 list field 已经存在，那么只需要往存在的数据中去更新
-      // 2、这时候 list 的 field 还未知，我们也不知道要更新到什么地方，所以这个更新是一个悬垂的状态
-
-      this.resolveRelations(reverse(checkResult.existingRelations));
-
-      return;
+    } else {
+      // 普通消费逻辑
+      this.model.value[relation.field] = relation.defaultValue;
     }
-
-    // 普通消费逻辑
-    this.model.value[relation.field] = relation.defaultValue;
 
     /**
      * 每次都检测一下，当所有的消费均已完成时，则可以留存一份永远不会被改变的 model，这个 model 是初始化 model 的最终结果，便于
      * 后续实现重置逻辑或者是 list 的添加逻辑等
      */
-    this.todo();
+    this.checkingConsume();
   }
 
   defaultValueCalcByType(type: string) {
@@ -131,6 +134,7 @@ export default class Model {
     const { current, parent } = relations[0];
 
     if (!current.field) return;
+
     if (!current.isConsumed) {
       set(
         this.model.value,
@@ -151,5 +155,22 @@ export default class Model {
     );
   }
 
-  todo() {}
+  checkingConsume() {
+    // 检测 relationMap 里每一项都 "defaultValue" "type" "field" in 整个 flow
+    Object.values(this.relationMap.values()).forEach((relation) => {
+      if (
+        "defaultValue" in relation &&
+        "type" in relation &&
+        "field" in relation
+      ) {
+        relation.isConsumed = true;
+      }
+    });
+    const allConsumed = Object.values(this.relationMap.values()).every(
+      (relation) => relation.isConsumed
+    );
+    if (allConsumed) {
+      this.immutableModel = cloneDeep(this.model.value);
+    }
+  }
 }
