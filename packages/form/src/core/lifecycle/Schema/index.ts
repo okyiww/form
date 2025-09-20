@@ -22,7 +22,6 @@ import { Ref, ref, watch } from "vue";
 export default class Schema {
   rawSchemas: RawSchemas;
   parsedSchemas: Ref<ParsedSchemas> = ref([]);
-  EffectedSchemas = new Map();
 
   constructor(public runtime: Runtime) {
     this.rawSchemas = cloneDeep(runtime._options.schemas);
@@ -31,7 +30,7 @@ export default class Schema {
     watch(
       () => this.runtime._model.model.value,
       () => {
-        for (const effect of this.EffectedSchemas.values()) {
+        for (const effect of this.runtime._update.effects.values()) {
           effect();
         }
       },
@@ -149,8 +148,8 @@ export default class Schema {
 
     if (isFunction(value)) {
       const effectKey = `${metadata.path}.${metadata.propertyKey}`;
-      if (!this.EffectedSchemas.has(effectKey)) {
-        this.EffectedSchemas.set(effectKey, () => {
+      if (!this.runtime._update.effects.has(effectKey)) {
+        this.runtime._update.effects.set(effectKey, () => {
           const executionRes = value({
             model: this.runtime._model.model.value,
           });
