@@ -1,4 +1,7 @@
-import { DefineFormSetupOptions } from "@/helpers/defineFormSetup/types";
+import {
+  DefineFormSetupOptions,
+  Template,
+} from "@/helpers/defineFormSetup/types";
 import { FormSetupLoader } from "../lifecycle/types";
 import { keyBy } from "lodash";
 
@@ -20,7 +23,7 @@ export class FormContext {
     });
   }
 
-  static getTemplate(templateId = this.context.default.templateId) {
+  static getTemplate(templateId = this.context.default.templateId): Template {
     return this.templateById[templateId];
   }
 }

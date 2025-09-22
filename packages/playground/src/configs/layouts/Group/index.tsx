@@ -3,7 +3,11 @@ import styles from "./index.module.scss";
 
 export default defineComponent({
   props: {},
-  setup(props) {
-    return () => <h1>temp</h1>;
+  setup(props, { slots }) {
+    return () => (
+      <div class={styles.group}>
+        <div class={styles.content}>{slots.default?.()}</div>
+      </div>
+    );
   },
 });

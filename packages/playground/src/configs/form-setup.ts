@@ -10,6 +10,27 @@ export default defineFormSetup({
     {
       id: "basic",
       adapter: "ArcoVue",
+      customAdapter: {
+        validate() {
+          console.log("validate new vali");
+          return Promise.resolve();
+        },
+      },
+      providers: {
+        Form,
+        FormItem,
+        layouts: {
+          Item,
+          Group,
+          List,
+          ListItem,
+        },
+      },
+    },
+    {
+      id: "custom",
+      adapter: "ArcoVue",
+      customAdapter: {},
       providers: {
         Form,
         FormItem,

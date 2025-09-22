@@ -26,6 +26,7 @@ export default class Render {
     modelSource = this.runtime._model.model.value
   ) {
     const Component = toRaw(schema.component);
+    if (!Component) return;
     return (
       <this.meta.FormItem field={schema.field} label={schema.label}>
         <Component
@@ -106,6 +107,23 @@ export default class Render {
     );
   }
 
+  renderGroupSchema(
+    schema: ParsedSchema,
+    modelSource = this.runtime._model.model.value
+  ) {
+    return (
+      <this.meta.layouts.Group>
+        {{
+          default: () => {
+            return schema.children.map((childSchema: any) => {
+              return this.renderParsedSchema(childSchema, modelSource);
+            });
+          },
+        }}
+      </this.meta.layouts.Group>
+    );
+  }
+
   renderParsedSchema(
     schema: ParsedSchema,
     modelSource = this.runtime._model.model.value,
@@ -115,7 +133,7 @@ export default class Render {
       case "item":
         return this.renderItemSchema(schema, modelSource);
       case "group":
-        return this.renderItemSchema(schema, modelSource);
+        return this.renderGroupSchema(schema, modelSource);
       case "list":
         return this.renderListSchema(schema, modelSource, baseModelPath);
       default:

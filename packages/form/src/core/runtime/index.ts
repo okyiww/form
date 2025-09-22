@@ -1,3 +1,4 @@
+import Adapter from "@/core/adapter";
 import { FormContext } from "@/core/context";
 import Model from "@/core/lifecycle/Model";
 import Render from "@/core/lifecycle/Render";
@@ -13,6 +14,7 @@ export default class Runtime {
   public _update: Update;
   public _options: UseFormOptions;
   public _context: FormContext;
+  public _adapter: Adapter;
 
   constructor(options: UseFormOptions) {
     this._options = options;
@@ -21,9 +23,16 @@ export default class Runtime {
     this._render = new Render(this);
     this._update = new Update(this);
     this._schema = new Schema(this);
+    this._adapter = new Adapter(this);
   }
 
   render(): Component {
     return this._render.render();
+  }
+
+  submit() {
+    return this._adapter.adaptee.validate().then(() => {
+      return this._model.model.value;
+    });
   }
 }
