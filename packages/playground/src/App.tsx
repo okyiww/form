@@ -19,6 +19,29 @@ export default defineComponent({
           label: "姓名",
           field: "name",
           component: Input,
+          layout: defineComponent({
+            setup: (_, { slots }) => {
+              return () => (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "10px",
+                    backgroundColor: "red",
+                  }}
+                >
+                  <div>
+                    姓名
+                    <div>
+                      <div>
+                        <div>hhh: {slots.default?.()}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            },
+          }),
         },
         {
           label: "年龄",

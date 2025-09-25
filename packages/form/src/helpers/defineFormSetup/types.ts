@@ -20,7 +20,7 @@ export type Template =
           Group: Component;
           List: Component;
           ListItem: Component;
-        };
+        } & Record<string, Component>;
       };
     }
   | {
@@ -34,7 +34,7 @@ export type Template =
           Group: Component;
           List: Component;
           ListItem: Component;
-        };
+        } & Record<string, Component>;
       };
     }
   | {
@@ -49,7 +49,7 @@ export type Template =
           Group: Component;
           List: Component;
           ListItem: Component;
-        };
+        } & Record<string, Component>;
       };
     };
 
