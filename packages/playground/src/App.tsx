@@ -50,6 +50,29 @@ export default defineComponent({
             ],
           },
         },
+        {
+          label: "联系方式",
+          type: "list",
+          field: "contacts",
+          children: [
+            {
+              label: "联系类型",
+              field: "contactType",
+              component: Select,
+              componentProps: {
+                options: [
+                  { label: "电话", value: "phone" },
+                  { label: "邮箱", value: "email" },
+                ],
+              },
+            },
+            {
+              label: "联系方式",
+              field: "contact",
+              component: Input,
+            },
+          ],
+        },
       ]),
     });
 

@@ -3,6 +3,8 @@ export type Component = any;
 export type BuiltInAdapter = "ArcoVue" | (string & {});
 
 export type CustomAdapter = {
+  formModelName: string;
+  formModelKey: string; // 用于唯一标识某个表单域
   validate: () => Promise<void>;
 };
 

@@ -12,6 +12,7 @@ app
   .use(ArcoVue)
   .use(initForm, {
     loader: () => import("@/configs/form-setup"),
+    env: "web",
   })
   .use(pinia)
   .mount("#app");

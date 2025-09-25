@@ -2,10 +2,11 @@ import { FormContext } from "@/core/context";
 import { ParsedSchema } from "@/core/lifecycle/Schema/types";
 import Runtime from "@/core/runtime";
 import { cloneDeep, get, set } from "lodash";
-import { defineComponent, ref, toRaw, unref, watch } from "vue";
+import { defineComponent, ref, toRaw } from "vue";
 
 export default class Render {
   public meta;
+  public formRef = ref();
 
   constructor(public runtime: Runtime) {
     this.meta = this.getRenderMeta();
@@ -23,12 +24,28 @@ export default class Render {
 
   renderItemSchema(
     schema: ParsedSchema,
-    modelSource = this.runtime._model.model.value
+    modelSource = this.runtime._model.model.value,
+    baseFieldPath?: string
   ) {
     const Component = toRaw(schema.component);
     if (!Component) return;
+    const _formModelKey = this.runtime._adapter.adaptee.formModelKey;
+    const adaptedFormItemProps = {
+      [_formModelKey]: baseFieldPath
+        ? `${baseFieldPath}.${schema.field}`
+        : schema.field,
+    };
     return (
-      <this.meta.FormItem field={schema.field} label={schema.label}>
+      <this.meta.FormItem
+        {...adaptedFormItemProps}
+        label={schema.label}
+        rules={[
+          {
+            required: true,
+            message: `${schema.label}不能为空`, // TODO: 多语种
+          },
+        ]}
+      >
         <Component
           {...schema.componentProps}
           modelValue={get(modelSource, schema.field)}
@@ -43,7 +60,8 @@ export default class Render {
   renderListSchema(
     schema: ParsedSchema,
     modelSource = this.runtime._model.model.value,
-    baseModelPath?: string
+    baseModelPath?: string,
+    baseFieldPath?: string
   ) {
     // 这里使用 [{}] 是因为便于快速渲染出第一个空节点，避免因为还没处理完成导致页面一直不展示内容
     const listModel = get(modelSource, schema.field) ?? [{}];
@@ -51,7 +69,7 @@ export default class Render {
       <this.meta.layouts.List>
         {{
           default: () => {
-            return listModel.map((model: any) => (
+            return listModel.map((model: any, modelIndex: number) => (
               <this.meta.layouts.ListItem>
                 {{
                   default: () => {
@@ -59,6 +77,9 @@ export default class Render {
                       return this.renderParsedSchema(
                         childSchema,
                         model,
+                        baseFieldPath
+                          ? `${baseFieldPath}.${schema.field}.${modelIndex}`
+                          : `${schema.field}.${modelIndex}`,
                         baseModelPath
                           ? `${baseModelPath}.${schema.field}.[${0}]`
                           : `${schema.field}.[${0}]`
@@ -109,14 +130,19 @@ export default class Render {
 
   renderGroupSchema(
     schema: ParsedSchema,
-    modelSource = this.runtime._model.model.value
+    modelSource = this.runtime._model.model.value,
+    baseFieldPath?: string
   ) {
     return (
       <this.meta.layouts.Group>
         {{
           default: () => {
             return schema.children.map((childSchema: any) => {
-              return this.renderParsedSchema(childSchema, modelSource);
+              return this.renderParsedSchema(
+                childSchema,
+                modelSource,
+                baseFieldPath
+              );
             });
           },
         }}
@@ -127,25 +153,35 @@ export default class Render {
   renderParsedSchema(
     schema: ParsedSchema,
     modelSource = this.runtime._model.model.value,
+    baseFieldPath?: string,
     baseModelPath?: string
   ) {
     switch (schema.type) {
       case "item":
-        return this.renderItemSchema(schema, modelSource);
+        return this.renderItemSchema(schema, modelSource, baseFieldPath);
       case "group":
-        return this.renderGroupSchema(schema, modelSource);
+        return this.renderGroupSchema(schema, modelSource, baseFieldPath);
       case "list":
-        return this.renderListSchema(schema, modelSource, baseModelPath);
+        return this.renderListSchema(
+          schema,
+          modelSource,
+          baseFieldPath,
+          baseModelPath
+        );
       default:
-        return this.renderItemSchema(schema, modelSource);
+        return this.renderItemSchema(schema, modelSource, baseFieldPath);
     }
   }
 
   render() {
     return defineComponent({
       setup: () => {
+        const _formModelName = this.runtime._adapter.adaptee.formModelName;
+        const adaptedFormProps = {
+          [_formModelName]: this.runtime._model.model.value,
+        };
         return () => (
-          <this.meta.Form model={this.runtime._model.model.value}>
+          <this.meta.Form ref={this.formRef} {...adaptedFormProps}>
             {this.runtime._schema.parsedSchemas.value.map((schema) =>
               this.renderParsedSchema.bind(this)(schema)
             )}

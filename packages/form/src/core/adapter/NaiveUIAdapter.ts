@@ -1,11 +1,11 @@
 import Runtime from "@/core/runtime";
 import { CustomAdapter } from "@/helpers/defineFormSetup/types";
 
-export class ArcoVueAdapter implements CustomAdapter {
+export class NaiveUIAdapter implements CustomAdapter {
   constructor(public runtime: Runtime) {}
 
   formModelName = "model";
-  formModelKey = "field";
+  formModelKey = "key";
 
   validate(): Promise<void> {
     return new Promise((resolve, reject) => {

@@ -1,7 +1,10 @@
 import { ArcoVueAdapter } from "@/core/adapter/ArcoVueAdapter";
+import { NaiveUIAdapter } from "@/core/adapter/NaiveUIAdapter";
+import { NutUIAdapter } from "@/core/adapter/NutUIAdapter";
 import { FormContext } from "@/core/context";
 import Runtime from "@/core/runtime";
 import { CustomAdapter } from "@/helpers/defineFormSetup/types";
+import { isFunction } from "lodash";
 
 export default class Adapter {
   presetAdapters: Record<string, any>;
@@ -10,11 +13,13 @@ export default class Adapter {
   constructor(public runtime: Runtime) {
     this.presetAdapters = {
       ArcoVue: new ArcoVueAdapter(runtime),
+      NutUI: new NutUIAdapter(runtime),
+      NaiveUI: new NaiveUIAdapter(runtime),
     };
-    this.init();
+    this.initAdapters();
   }
 
-  init() {
+  initAdapters() {
     // TODO: improve type
     const template = FormContext.getTemplate(
       this.runtime._options.templateId
@@ -31,11 +36,15 @@ export default class Adapter {
     // custom 的优先级高于 preset
     if (template.customAdapter) {
       Object.keys(template.customAdapter).forEach((key) => {
-        this.adaptee[key as keyof CustomAdapter] = () =>
-          template.customAdapter[key as keyof CustomAdapter](this.runtime);
+        const adapter = template.customAdapter[key as keyof CustomAdapter];
+        if (isFunction(adapter)) {
+          // @ts-expect-error
+          this.adaptee[key as keyof CustomAdapter] = () =>
+            adapter(this.runtime);
+        } else {
+          this.adaptee[key as keyof CustomAdapter] = adapter;
+        }
       });
-
-      console.log("new this.adaptee", this.adaptee);
     }
   }
 }

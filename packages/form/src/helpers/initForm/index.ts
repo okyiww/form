@@ -8,9 +8,17 @@ export const initForm = {
       throw new Error("loader is required.");
     }
     const originalMount = app.mount;
-    app.mount = async (rootContainer: string) => {
-      await FormContext.parseLoader(loader);
-      return originalMount(rootContainer);
-    };
+    // TODO refactor
+    if (options.env === "weapp") {
+      app.mount = (rootContainer: string) => {
+        FormContext.parseLoader(loader);
+        return originalMount(rootContainer);
+      };
+    } else {
+      app.mount = async (rootContainer: string) => {
+        await FormContext.parseLoader(loader);
+        return originalMount(rootContainer);
+      };
+    }
   },
 };
