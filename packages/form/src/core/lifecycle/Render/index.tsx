@@ -5,7 +5,7 @@ import { useLayout } from "@/core/lifecycle/hooks/useLayout";
 import { ParsedSchema } from "@/core/lifecycle/Schema/types";
 import Runtime from "@/core/runtime";
 import { cloneDeep, get, set } from "lodash";
-import { defineComponent, Fragment, ref, toRaw } from "vue";
+import { defineComponent, ref, toRaw } from "vue";
 
 export default class Render {
   public meta;
@@ -61,13 +61,12 @@ export default class Render {
   renderListSchema(
     schema: ParsedSchema,
     modelSource = this.runtime._model.model.value,
-    baseModelPath?: string,
     baseFieldPath?: string,
+    baseModelPath?: string,
     Layout?: any
   ) {
     // 这里使用 [{}] 是因为便于快速渲染出第一个空节点，避免因为还没处理完成导致页面一直不展示内容
     const listModel = get(modelSource, schema.field) ?? [{}];
-    console.log("layout", Layout);
     return (
       <Layout.List>
         {{

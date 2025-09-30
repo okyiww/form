@@ -20,12 +20,11 @@ import {
 import { Ref, ref, watch } from "vue";
 
 export default class Schema {
-  rawSchemas: RawSchemas;
+  rawSchemas: RawSchemas | undefined = undefined;
   parsedSchemas: Ref<ParsedSchemas> = ref([]);
 
   constructor(public runtime: Runtime) {
-    this.rawSchemas = cloneDeep(runtime._options.schemas);
-    this.traverseSchemas(cloneDeep(runtime._options.schemas));
+    this.processSchemas();
 
     watch(
       () => this.runtime._model.model.value,
@@ -39,6 +38,30 @@ export default class Schema {
         deep: true,
       }
     );
+  }
+
+  processSchemas() {
+    if (isFunction(this.runtime._options.schemas)) {
+      const result = this.runtime._options.schemas() as any;
+      if (isPromise(result)) {
+        result.then((res: any) => {
+          this.rawSchemas = cloneDeep(res);
+          this.traverseSchemas(cloneDeep(res));
+        });
+      } else {
+        this.traverseSchemas(cloneDeep(result));
+      }
+    } else if (isPromise(this.runtime._options.schemas)) {
+      (this.runtime._options.schemas as unknown as Promise<RawSchemas>).then(
+        (res: any) => {
+          this.rawSchemas = cloneDeep(res);
+          this.traverseSchemas(cloneDeep(res));
+        }
+      );
+    } else {
+      this.rawSchemas = cloneDeep(this.runtime._options.schemas);
+      this.traverseSchemas(cloneDeep(this.runtime._options.schemas));
+    }
   }
 
   // I hope this function can only be called once
