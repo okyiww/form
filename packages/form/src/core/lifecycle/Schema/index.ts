@@ -29,9 +29,7 @@ export default class Schema {
     watch(
       () => this.runtime._model.model.value,
       () => {
-        for (const effect of this.runtime._update.effects.values()) {
-          effect();
-        }
+        this.runtime._update.trigger();
       },
       {
         immediate: true,
@@ -171,22 +169,21 @@ export default class Schema {
 
     if (isFunction(value)) {
       const effectKey = `${metadata.path}.${metadata.propertyKey}`;
-      if (!this.runtime._update.effects.has(effectKey)) {
-        this.runtime._update.effects.set(effectKey, () => {
-          const executionRes = value({
-            model: this.runtime._model.model.value,
-          });
-          if (isPromise(executionRes)) {
-            executionRes.then((res: any) => {
-              this.processingNonFunction(res, cloneDeep(metadata));
-            });
-
-            return;
-          }
-
-          return this.processingNonFunction(executionRes, cloneDeep(metadata));
+      console.log("effectKey", effectKey);
+      this.runtime._update.track(effectKey, () => {
+        const executionRes = value({
+          model: this.runtime._model.model.value,
         });
-      }
+        if (isPromise(executionRes)) {
+          executionRes.then((res: any) => {
+            this.processingNonFunction(res, cloneDeep(metadata));
+          });
+
+          return;
+        }
+
+        return this.processingNonFunction(executionRes, cloneDeep(metadata));
+      });
       const executionRes = value({
         model: this.runtime._model.model.value,
       });

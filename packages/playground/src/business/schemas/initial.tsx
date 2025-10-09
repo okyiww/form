@@ -8,6 +8,28 @@ export default defineFormSchema([
     component: Input,
   },
   {
+    label: "启用密码",
+    field: "enablePassword",
+    component: RadioGroup,
+    componentProps: {
+      options: [
+        { label: "是", value: true },
+        { label: "否", value: false },
+      ],
+    },
+    defaultValue: true,
+  },
+  {
+    label: "密码",
+    field: "password",
+    component: Input,
+    componentProps: {
+      type: ({ model }) => {
+        return model.enablePassword ? "password" : "text";
+      },
+    },
+  },
+  {
     label: "年龄",
     field: "age",
     component: InputNumber,
