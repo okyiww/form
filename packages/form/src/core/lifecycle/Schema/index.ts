@@ -23,6 +23,7 @@ import { Ref, ref, watch } from "vue";
 export default class Schema {
   rawSchemas: RawSchemas | undefined = undefined;
   parsedSchemas: Ref<ParsedSchemas> = ref([]);
+  refs = new Map<string, any>();
 
   constructor(public runtime: Runtime) {
     this.processSchemas();
@@ -172,6 +173,7 @@ export default class Schema {
               model: this.runtime._model.model.value,
               share: this.runtime.share.bind(this.runtime),
               shared: this.runtime.shared,
+              refs: this.refs,
             },
             ...args
           )
@@ -188,6 +190,7 @@ export default class Schema {
           share: (shared: AnyObject) =>
             this.runtime.share.bind(this.runtime)(shared, type === "model"),
           shared: this.runtime.shared,
+          refs: this.refs,
         });
         if (isPromise(executionRes)) {
           executionRes.then((res: any) => {

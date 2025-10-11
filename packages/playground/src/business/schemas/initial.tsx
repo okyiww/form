@@ -87,6 +87,7 @@ export default defineFormSchema([
         component: Input,
         componentProps: {
           onInput: raw((utils, value) => {
+            utils.refs.get("contacts.1.contact").value.focus();
             utils.share({
               contact: value,
             });

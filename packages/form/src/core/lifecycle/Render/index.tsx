@@ -31,6 +31,12 @@ export default class Render {
     baseFieldPath?: string,
     Layout?: any
   ) {
+    const fieldTarget = baseFieldPath
+      ? `${baseFieldPath}.${schema.field}`
+      : schema.field;
+    const componentRef = ref();
+    // 收集 refs 以供 helpers 使用
+    this.runtime._schema.refs.set(fieldTarget, componentRef);
     const Component = toRaw(schema.component);
     if (!Component) return;
     const formItemProps = useFormItemProps(this.runtime, schema, baseFieldPath);
@@ -47,6 +53,7 @@ export default class Render {
           ]}
         >
           <Component
+            ref={componentRef}
             modelValue={get(modelSource, schema.field)}
             onUpdate:modelValue={(value: any) => {
               set(modelSource, schema.field, value);
