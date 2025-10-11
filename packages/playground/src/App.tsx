@@ -1,4 +1,4 @@
-import { defineComponent, onBeforeMount } from "vue";
+import { defineComponent, nextTick, onBeforeMount, watch } from "vue";
 import { version, useForm } from "@okyiww/form";
 import { Button } from "@arco-design/web-vue";
 import styles from "./App.module.scss";
@@ -11,8 +11,12 @@ export default defineComponent({
       return import("@/business/schemas/initial").then((res) => res.default);
     }
 
-    const [Form, { submit, share }] = useForm({
+    const [Form, { submit, share, model, isReady }] = useForm({
       schemas: getSchemas,
+    });
+
+    isReady(() => {
+      model.value.name = "hello?";
     });
 
     function handleSubmit() {

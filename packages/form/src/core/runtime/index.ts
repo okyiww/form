@@ -6,6 +6,7 @@ import Schema from "@/core/lifecycle/Schema";
 import Update from "@/core/lifecycle/Update";
 import { Component } from "@/helpers/defineFormSetup/types";
 import { UseFormOptions } from "@/helpers/useForm/types";
+import { nextTick, watch } from "vue";
 
 export default class Runtime {
   public _schema: Schema;
@@ -44,5 +45,23 @@ export default class Runtime {
       // 当 share 被 model 触发时，不触发 share 的更新
       this._update.trigger("share");
     }
+  }
+
+  isReady(handler: AnyFunction) {
+    const unwatch = watch(
+      () => this._model.allConsumed.value,
+      (val) => {
+        if (val) {
+          handler();
+          nextTick(() => {
+            unwatch();
+          });
+        }
+      },
+      {
+        immediate: true,
+        deep: true,
+      }
+    );
   }
 }
