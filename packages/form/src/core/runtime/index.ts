@@ -64,4 +64,13 @@ export default class Runtime {
       }
     );
   }
+
+  hydrate(model: any) {
+    this.isReady(() => {
+      this._model.model.value = {
+        ...this._model.model.value,
+        ...model,
+      };
+    });
+  }
 }

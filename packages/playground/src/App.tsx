@@ -11,12 +11,8 @@ export default defineComponent({
       return import("@/business/schemas/initial").then((res) => res.default);
     }
 
-    const [Form, { submit, share, model, isReady }] = useForm({
+    const [Form, { submit, share, model, isReady, hydrate }] = useForm({
       schemas: getSchemas,
-    });
-
-    isReady(() => {
-      model.value.name = "hello?";
     });
 
     function handleSubmit() {
