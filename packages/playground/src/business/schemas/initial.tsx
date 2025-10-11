@@ -31,15 +31,7 @@ export default defineFormSchema([
     field: "password",
     component: Input,
     componentProps: {
-      type: ({ model, share }) => {
-        setTimeout(() => {
-          share({
-            genderOptions: [
-              { label: "男" + model.name, value: "male" },
-              { label: "女", value: "female" },
-            ],
-          });
-        }, 200);
+      type: ({ model }) => {
         return model.enablePassword ? "password" : "text";
       },
     },
@@ -55,9 +47,10 @@ export default defineFormSchema([
     field: "gender",
     component: RadioGroup,
     componentProps: {
-      options: ({ shared }) => {
-        return shared?.genderOptions;
-      },
+      options: [
+        { label: "男", value: "male" },
+        { label: "女", value: "female" },
+      ],
       type: "button",
     },
     defaultValue: "male",
@@ -96,10 +89,5 @@ export default defineFormSchema([
         component: Input,
       },
     ],
-  },
-  {
-    label: "Message Display",
-    field: "messageDisplay",
-    component: ({ shared }) => <div>{shared.message}</div>,
   },
 ]);

@@ -6,7 +6,7 @@ export function useForm(options: UseFormOptions) {
   return [
     runtime.render(),
     {
-      submit: runtime.submit,
+      submit: runtime.submit.bind(runtime),
     },
   ];
 }
