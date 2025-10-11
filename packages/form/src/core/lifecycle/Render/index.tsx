@@ -47,11 +47,11 @@ export default class Render {
           ]}
         >
           <Component
-            {...schema.componentProps}
             modelValue={get(modelSource, schema.field)}
             onUpdate:modelValue={(value: any) => {
               set(modelSource, schema.field, value);
             }}
+            {...schema.componentProps}
           ></Component>
         </this.meta.FormItem>
       </Layout>

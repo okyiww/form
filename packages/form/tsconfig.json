@@ -23,7 +23,8 @@
     },
     "jsxImportSource": "vue",
     "declaration": true,
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "types": ["@okyiww/nexus"]
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx"]
 }

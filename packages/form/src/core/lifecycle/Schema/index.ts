@@ -1,4 +1,5 @@
 import { Metadata, ParsedSchemas } from "@/core/lifecycle/Schema/types";
+import { TriggerType } from "@/core/lifecycle/Update/types";
 import Runtime from "@/core/runtime";
 import {
   traverse,
@@ -169,10 +170,12 @@ export default class Schema {
 
     if (isFunction(value)) {
       const effectKey = `${metadata.path}.${metadata.propertyKey}`;
-      console.log("effectKey", effectKey);
-      this.runtime._update.track(effectKey, () => {
+      const effect = (type: TriggerType = "model") => {
         const executionRes = value({
           model: this.runtime._model.model.value,
+          share: (shared: AnyObject) =>
+            this.runtime.share.bind(this.runtime)(shared, type === "model"),
+          shared: this.runtime.shared,
         });
         if (isPromise(executionRes)) {
           executionRes.then((res: any) => {
@@ -183,20 +186,9 @@ export default class Schema {
         }
 
         return this.processingNonFunction(executionRes, cloneDeep(metadata));
-      });
-      const executionRes = value({
-        model: this.runtime._model.model.value,
-      });
-
-      if (isPromise(executionRes)) {
-        executionRes.then((res: any) => {
-          this.processingNonFunction(res, metadata);
-        });
-
-        return;
-      }
-
-      return this.processingNonFunction(executionRes, metadata);
+      };
+      this.runtime._update.track(effectKey, effect);
+      return effect();
     }
 
     this.processingNonFunction(value, metadata);

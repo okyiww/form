@@ -1,5 +1,5 @@
 import { Input, InputNumber, RadioGroup, Select } from "@arco-design/web-vue";
-import { defineFormSchema } from "@okyiww/form";
+import { defineFormSchema, raw } from "@okyiww/form";
 
 export default defineFormSchema([
   {
@@ -10,7 +10,14 @@ export default defineFormSchema([
   {
     label: "启用密码",
     field: "enablePassword",
-    component: RadioGroup,
+    component: ({ share, model }) => {
+      setTimeout(() => {
+        share({
+          message: "This is a message from share: " + model.name,
+        });
+      }, 100);
+      return RadioGroup;
+    },
     componentProps: {
       options: [
         { label: "是", value: true },
@@ -24,7 +31,15 @@ export default defineFormSchema([
     field: "password",
     component: Input,
     componentProps: {
-      type: ({ model }) => {
+      type: ({ model, share }) => {
+        setTimeout(() => {
+          share({
+            genderOptions: [
+              { label: "男" + model.name, value: "male" },
+              { label: "女", value: "female" },
+            ],
+          });
+        }, 200);
         return model.enablePassword ? "password" : "text";
       },
     },
@@ -40,10 +55,9 @@ export default defineFormSchema([
     field: "gender",
     component: RadioGroup,
     componentProps: {
-      options: [
-        { label: "男", value: "male" },
-        { label: "女", value: "female" },
-      ],
+      options: ({ shared }) => {
+        return shared?.genderOptions;
+      },
       type: "button",
     },
     defaultValue: "male",
@@ -51,7 +65,7 @@ export default defineFormSchema([
   {
     label: "爱好",
     field: "hobbies",
-    component: Select,
+    component: ({ shared }) => (shared.genderOptions ? Select : Input),
     componentProps: {
       options: [
         { label: "篮球", value: "basketball" },
@@ -82,5 +96,10 @@ export default defineFormSchema([
         component: Input,
       },
     ],
+  },
+  {
+    label: "Message Display",
+    field: "messageDisplay",
+    component: ({ shared }) => <div>{shared.message}</div>,
   },
 ]);

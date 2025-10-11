@@ -15,6 +15,7 @@ export default class Runtime {
   public _options: UseFormOptions;
   public _context: FormContext;
   public _adapter: Adapter;
+  public shared = {};
 
   constructor(options: UseFormOptions) {
     this._options = options;
@@ -34,5 +35,14 @@ export default class Runtime {
     return this._adapter.adaptee.validate().then(() => {
       return this._model.model.value;
     });
+  }
+
+  share(shared: any, isModelTrigger = true) {
+    this.shared = { ...this.shared, ...shared };
+    // 这个锁是为了防止 share 无限触发，导致无限循环
+    if (isModelTrigger) {
+      // 当 share 被 model 触发时，不触发 share 的更新
+      this._update.trigger("share");
+    }
   }
 }

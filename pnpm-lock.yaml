@@ -21,6 +21,9 @@ importers:
         specifier: ^4.17.21
         version: 4.17.21
     devDependencies:
+      '@okyiww/nexus':
+        specifier: workspace:*
+        version: link:../nexus
       '@types/lodash':
         specifier: ^4.17.20
         version: 4.17.20
@@ -43,6 +46,8 @@ importers:
         specifier: ^2.2.4
         version: 2.2.8(typescript@5.8.2)
 
+  packages/nexus: {}
+
   packages/playground:
     dependencies:
       '@okyiww/form':
@@ -58,6 +63,9 @@ importers:
       '@arco-design/web-vue':
         specifier: ^2.57.0
         version: 2.57.0(vue@3.5.13(typescript@5.7.3))
+      '@okyiww/nexus':
+        specifier: workspace:*
+        version: link:../nexus
       '@vitejs/plugin-vue':
         specifier: ^5.2.1
         version: 5.2.3(vite@6.2.2(@types/node@22.13.11)(sass@1.92.1))(vue@3.5.13(typescript@5.7.3))

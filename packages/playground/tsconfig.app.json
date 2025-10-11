@@ -12,7 +12,9 @@
 
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+
+    "types": ["@okyiww/nexus"]
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"]
 }

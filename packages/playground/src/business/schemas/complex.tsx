@@ -20,10 +20,26 @@ export default defineFormSchema([
     },
   },
   {
-    label: "姓名",
+    label: ({ share, model }) => {
+      share({
+        name: model.nameold,
+      });
+      return "姓名";
+    },
     field: "name",
     defaultValue: () => "Evan Huang",
     component: ({ model }) => (model.nameold?.length > 10 ? Input : Select),
+  },
+  {
+    label: "姓名2",
+    field: "name2",
+    component: Input,
+    componentProps: {
+      modelValue: ({ shared }) => {
+        console.log("shared", shared);
+        return shared.name;
+      },
+    },
   },
   {
     type: "list",
