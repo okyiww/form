@@ -4,7 +4,7 @@ import { useFormProps } from "@/core/lifecycle/hooks/useFormProps";
 import { useLayout } from "@/core/lifecycle/hooks/useLayout";
 import { ParsedSchema } from "@/core/lifecycle/Schema/types";
 import Runtime from "@/core/runtime";
-import { cloneDeep, get, set } from "lodash";
+import { cloneDeep, get, isBoolean, set } from "lodash";
 import { defineComponent, ref, toRaw } from "vue";
 
 export default class Render {
@@ -40,28 +40,31 @@ export default class Render {
     const Component = toRaw(schema.component);
     if (!Component) return;
     const formItemProps = useFormItemProps(this.runtime, schema, baseFieldPath);
+    const show = isBoolean(schema.show) ? schema.show : true;
     return (
-      <Layout>
-        <this.meta.FormItem
-          {...formItemProps}
-          label={schema.label}
-          rules={[
-            {
-              required: true,
-              message: `${schema.label}不能为空`, // TODO: 多语种
-            },
-          ]}
-        >
-          <Component
-            ref={componentRef}
-            modelValue={get(modelSource, schema.field)}
-            onUpdate:modelValue={(value: any) => {
-              set(modelSource, schema.field, value);
-            }}
-            {...schema.componentProps}
-          ></Component>
-        </this.meta.FormItem>
-      </Layout>
+      show && (
+        <Layout>
+          <this.meta.FormItem
+            {...formItemProps}
+            label={schema.label}
+            rules={[
+              {
+                required: true,
+                message: `${schema.label}不能为空`, // TODO: 多语种
+              },
+            ]}
+          >
+            <Component
+              ref={componentRef}
+              modelValue={get(modelSource, schema.field)}
+              onUpdate:modelValue={(value: any) => {
+                set(modelSource, schema.field, value);
+              }}
+              {...schema.componentProps}
+            ></Component>
+          </this.meta.FormItem>
+        </Layout>
+      )
     );
   }
 

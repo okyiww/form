@@ -42,6 +42,7 @@ export default defineFormSchema([
     field: "age",
     component: InputNumber,
     defaultValue: 18,
+    show: ({ model }) => model.enablePassword,
   },
   {
     label: "性别",
