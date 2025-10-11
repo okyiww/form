@@ -39,6 +39,7 @@ export default class Runtime {
   }
 
   share(shared: any, isModelTrigger = true) {
+    console.log("shared", shared);
     this.shared = { ...this.shared, ...shared };
     // 这个锁是为了防止 share 无限触发，导致无限循环
     if (isModelTrigger) {

@@ -1,3 +1,4 @@
+import Counter from "@/components/Counter";
 import { Input, InputNumber, RadioGroup, Select } from "@arco-design/web-vue";
 import { defineFormSchema, raw } from "@okyiww/form";
 
@@ -84,7 +85,24 @@ export default defineFormSchema([
         label: "联系方式",
         field: "contact",
         component: Input,
+        componentProps: {
+          onInput: raw((utils, value) => {
+            utils.share({
+              contact: value,
+            });
+          }),
+        },
       },
     ],
+  },
+  {
+    label: "show contact",
+    field: "showContact",
+    component: ({ shared }) => <div>{shared.contact}</div>,
+  },
+  {
+    label: "计数器",
+    field: "counter",
+    component: Counter,
   },
 ]);

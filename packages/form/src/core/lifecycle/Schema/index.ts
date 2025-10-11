@@ -165,6 +165,18 @@ export default class Schema {
    */
   processing(value: any, metadata: Metadata) {
     if (isRaw(value)) {
+      if (isFunction(value)) {
+        return metadata.processedSetter?.((...args: AnyArray) =>
+          value(
+            {
+              model: this.runtime._model.model.value,
+              share: this.runtime.share.bind(this.runtime),
+              shared: this.runtime.shared,
+            },
+            ...args
+          )
+        );
+      }
       return metadata.processedSetter?.(value);
     }
 
