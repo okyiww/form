@@ -47,10 +47,7 @@ export default defineFormSchema([
     field: "gender",
     component: RadioGroup,
     componentProps: {
-      options: [
-        { label: "男", value: "male" },
-        { label: "女", value: "female" },
-      ],
+      options: ({ shared }) => shared.genderOptions,
       type: "button",
     },
     defaultValue: "male",

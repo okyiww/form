@@ -1,4 +1,4 @@
-import { defineComponent } from "vue";
+import { defineComponent, onBeforeMount } from "vue";
 import { version, useForm } from "@okyiww/form";
 import { Button } from "@arco-design/web-vue";
 import styles from "./App.module.scss";
@@ -11,7 +11,7 @@ export default defineComponent({
       return import("@/business/schemas/initial").then((res) => res.default);
     }
 
-    const [Form, { submit }] = useForm({
+    const [Form, { submit, share }] = useForm({
       schemas: getSchemas,
     });
 
@@ -20,6 +20,21 @@ export default defineComponent({
         console.log(res);
       });
     }
+
+    function fetchGenderOptions() {
+      setTimeout(() => {
+        share({
+          genderOptions: [
+            { label: "男", value: "male" },
+            { label: "女", value: "female" },
+          ],
+        });
+      }, 2000);
+    }
+
+    onBeforeMount(() => {
+      fetchGenderOptions();
+    });
 
     return () => (
       <div class={styles.app}>
