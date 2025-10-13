@@ -1,7 +1,6 @@
-FROM nginx:alpine
-
-COPY .vitepress/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+FROM node:22-alpine
+RUN yarn config set registry "https://registry.npmmirror.com/" && yarn global add local-web-server
+RUN mkdir /app
+COPY .vitepress/dist /app/
+WORKDIR /app
+CMD ws --spa index.html -p 80
