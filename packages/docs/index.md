@@ -6,7 +6,7 @@ hero:
   text: 配置式表单构建工具
   tagline: A vue form builder.
   image:
-    src: /public/oasis.png
+    src: /oasis.png
     alt: VitePress
   actions:
     - theme: brand
