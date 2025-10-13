@@ -1,11 +1,11 @@
 import { defineConfig } from "vitepress";
 
 export default defineConfig({
-  base: "/docs/",
+  base: "/form-docs/",
   title: "Form",
   description: "A vue form builder.",
   themeConfig: {
-    nav: [{ text: "Home", link: "/" }],
+    nav: [{ text: "Home", link: "/docs" }],
 
     sidebar: [
       {
