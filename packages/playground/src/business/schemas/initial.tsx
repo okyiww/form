@@ -36,6 +36,7 @@ export default defineFormSchema([
         return model.enablePassword ? "password" : "text";
       },
     },
+    show: ({ shared }) => shared.allowDisplay,
   },
   {
     label: "年龄",
@@ -63,6 +64,11 @@ export default defineFormSchema([
         { label: "篮球", value: "basketball" },
         { label: "足球", value: "football" },
       ],
+      onChange: raw((utils, value) => {
+        utils.share({
+          allowDisplay: value === "basketball",
+        });
+      }),
     },
   },
   {

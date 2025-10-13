@@ -5,6 +5,8 @@
   "scripts": {
     "dev:form": "pnpm --filter @okyiww/form dev",
     "dev:playground": "pnpm --filter playground dev",
+    "dev:docs": "pnpm --filter docs dev",
+    "build:docs": "pnpm --filter docs build",
     "changeset": "changeset",
     "version-packages": "changeset version"
   },

@@ -1,4 +1,4 @@
-import { defineComponent, nextTick, onBeforeMount, watch } from "vue";
+import { defineComponent, onBeforeMount } from "vue";
 import { version, useForm } from "@okyiww/form";
 import { Button } from "@arco-design/web-vue";
 import styles from "./App.module.scss";
