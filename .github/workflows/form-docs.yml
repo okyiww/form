@@ -8,7 +8,7 @@ on:
 env:
   PROJECT_NAME: formdocs
   IAC_TARGET: production
-  IAC_FILE: docs.yaml
+  IAC_FILE: form-docs.yaml
 
 jobs:
   setup:
