@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  PROJECT_NAME: form_docs
+  PROJECT_NAME: formdocs
   IAC_TARGET: production
   IAC_FILE: docs.yaml
 
