@@ -11,6 +11,7 @@ export function useForm(options: UseFormOptions) {
       model: runtime._model.model,
       isReady: runtime.isReady.bind(runtime),
       hydrate: runtime.hydrate.bind(runtime),
+      getFormRef: runtime.getFormRef.bind(runtime),
     },
   ];
 }

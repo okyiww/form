@@ -73,4 +73,8 @@ export default class Runtime {
       };
     });
   }
+
+  getFormRef() {
+    return this._render.formRef;
+  }
 }

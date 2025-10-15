@@ -1,4 +1,4 @@
-import { defineComponent, onBeforeMount, ref } from "vue";
+import { defineComponent, onBeforeMount, onMounted, ref } from "vue";
 import { version, useForm } from "@okyiww/form";
 import { Button } from "@arco-design/web-vue";
 import styles from "./App.module.scss";
@@ -39,12 +39,10 @@ export default defineComponent({
       fetchGenderOptions();
     });
 
-    const formRef = ref();
-
     return () => (
       <div class={styles.app}>
         <div>the okyiww form version is {version}</div>
-        <Form ref={formRef} />
+        <Form />
         <Button type="primary" onClick={handleSubmit}>
           提交
         </Button>

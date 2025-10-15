@@ -12,5 +12,6 @@ export default defineFormSchema([
     formItemSlots: {
       extra: () => "hi extra",
     },
+    required: "Test",
   },
 ]);
