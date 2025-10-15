@@ -86,6 +86,7 @@ export default defineFormSchema([
             { label: "邮箱", value: "email" },
           ],
         },
+        required: true,
         defaultValue: "phone",
       },
       {

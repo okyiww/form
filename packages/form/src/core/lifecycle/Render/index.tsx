@@ -4,6 +4,7 @@ import { useFormItemProps } from "@/core/lifecycle/hooks/useFormItemProps";
 import { useFormProps } from "@/core/lifecycle/hooks/useFormProps";
 import { useLayout } from "@/core/lifecycle/hooks/useLayout";
 import { useLayoutStyle } from "@/core/lifecycle/hooks/useLayoutStyle";
+import { useRules } from "@/core/lifecycle/hooks/useRules";
 import { ParsedSchema } from "@/core/lifecycle/Schema/types";
 import Runtime from "@/core/runtime";
 import { cloneDeep, get, isBoolean, set } from "lodash";
@@ -49,12 +50,7 @@ export default class Render {
           <this.meta.FormItem
             {...formItemProps}
             label={schema.label}
-            rules={[
-              {
-                required: true,
-                message: `${schema.label}不能为空`, // TODO: 多语种
-              },
-            ]}
+            rules={useRules(schema)}
           >
             <Component
               ref={componentRef}
