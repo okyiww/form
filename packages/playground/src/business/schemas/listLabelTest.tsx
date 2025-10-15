@@ -1,5 +1,5 @@
 import { Input, Select } from "@arco-design/web-vue";
-import { defineFormSchema, raw } from "@okyiww/form";
+import { defineFormSchema, once, raw } from "@okyiww/form";
 
 export default defineFormSchema([
   {
@@ -20,16 +20,20 @@ export default defineFormSchema([
         field: "hobbyType",
         component: Select,
         componentProps: {
-          options: [
-            {
-              label: "运动",
-              value: "sport",
-            },
-            {
-              label: "音乐",
-              value: "music",
-            },
-          ],
+          options: once(
+            () =>
+              new Promise((resolve) => {
+                setTimeout(() => {
+                  console.log("fetchedn");
+                  resolve([
+                    {
+                      label: "运动",
+                      value: "sport",
+                    },
+                  ]);
+                }, 1000);
+              })
+          ),
         },
       },
     ],

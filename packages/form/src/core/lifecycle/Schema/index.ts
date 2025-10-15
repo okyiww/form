@@ -8,7 +8,7 @@ import {
   wrapperNumericLike,
 } from "@/core/services";
 import { RawSchemas } from "@/helpers/defineFormSchema/types";
-import { isRaw } from "@/index";
+import { isOnce, isRaw } from "@/index";
 import {
   cloneDeep,
   get,
@@ -193,6 +193,7 @@ export default class Schema {
           refs: this.refs,
         });
         if (isPromise(executionRes)) {
+          this.processingNonFunction(undefined, cloneDeep(metadata));
           executionRes.then((res: any) => {
             this.processingNonFunction(res, cloneDeep(metadata));
           });
@@ -202,7 +203,9 @@ export default class Schema {
 
         return this.processingNonFunction(executionRes, cloneDeep(metadata));
       };
-      this.runtime._update.track(effectKey, effect);
+      if (!isOnce(value)) {
+        this.runtime._update.track(effectKey, effect);
+      }
       return effect();
     }
 
