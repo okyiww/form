@@ -17,7 +17,7 @@ const namePlaceholderMap = transformValueToKey({
 
 export function usePlaceholder(label: string, componentName?: string) {
   if (!label) return;
-  let placeholder = `${label}`;
+  let placeholder = `请输入${label}`;
   Object.keys(namePlaceholderMap).forEach((key) => {
     if (componentName?.toLowerCase().includes(key.toLowerCase())) {
       placeholder = `${namePlaceholderMap[key]}${label}`;
