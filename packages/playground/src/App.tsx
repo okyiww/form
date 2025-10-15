@@ -11,7 +11,7 @@ export default defineComponent({
       return import("@/business/schemas/formOrItem").then((res) => res.default);
     }
 
-    const [Form, { submit, share }] = useForm({
+    const [Form, { submit, share, isReady, getFormRef }] = useForm({
       schemas: getSchemas,
       formProps: {
         layout: "vertical",
@@ -37,6 +37,13 @@ export default defineComponent({
 
     onBeforeMount(() => {
       fetchGenderOptions();
+    });
+
+    isReady(() => {
+      const formRef = getFormRef();
+      formRef.value.validate((errors: any) => {
+        console.log("errors", errors);
+      });
     });
 
     return () => (

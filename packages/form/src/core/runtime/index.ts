@@ -52,10 +52,12 @@ export default class Runtime {
       () => this._model.allConsumed.value,
       (val) => {
         if (val) {
-          handler();
-          nextTick(() => {
-            unwatch();
-          });
+          setTimeout(() => {
+            handler();
+            nextTick(() => {
+              unwatch();
+            });
+          }, 0);
         }
       },
       {
