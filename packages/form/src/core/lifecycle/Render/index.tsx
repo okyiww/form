@@ -56,15 +56,20 @@ export default class Render {
             label={label}
             rules={useRules(schema)}
           >
-            <Component
-              ref={componentRef}
-              modelValue={get(modelSource, schema.field)}
-              onUpdate:modelValue={(value: any) => {
-                set(modelSource, schema.field, value);
-              }}
-              placeholder={placeholder}
-              {...schema.componentProps}
-            ></Component>
+            {{
+              ...schema.formItemSlots,
+              default: () => (
+                <Component
+                  ref={componentRef}
+                  modelValue={get(modelSource, schema.field)}
+                  onUpdate:modelValue={(value: any) => {
+                    set(modelSource, schema.field, value);
+                  }}
+                  placeholder={placeholder}
+                  {...schema.componentProps}
+                ></Component>
+              ),
+            }}
           </this.meta.FormItem>
         </Layout>
       )
@@ -214,11 +219,16 @@ export default class Render {
         const formProps = useFormProps(this.runtime);
         return () => (
           <this.meta.Form ref={this.formRef} {...formProps}>
-            <div style={useBaseStyle(this.runtime._options.layoutGap)}>
-              {this.runtime._schema.parsedSchemas.value.map((schema) =>
-                this.renderParsedSchema.bind(this)(schema)
-              )}
-            </div>
+            {{
+              ...this.runtime._options.formSlots,
+              default: () => (
+                <div style={useBaseStyle(this.runtime._options.layoutGap)}>
+                  {this.runtime._schema.parsedSchemas.value.map((schema) =>
+                    this.renderParsedSchema.bind(this)(schema)
+                  )}
+                </div>
+              ),
+            }}
           </this.meta.Form>
         );
       },

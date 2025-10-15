@@ -1,4 +1,4 @@
-import { defineComponent, onBeforeMount } from "vue";
+import { defineComponent, onBeforeMount, ref } from "vue";
 import { version, useForm } from "@okyiww/form";
 import { Button } from "@arco-design/web-vue";
 import styles from "./App.module.scss";
@@ -8,13 +8,14 @@ export default defineComponent({
     console.log("the okyiww form version is", version);
 
     function getSchemas() {
-      return import("@/business/schemas/listLabelTest").then(
-        (res) => res.default
-      );
+      return import("@/business/schemas/formOrItem").then((res) => res.default);
     }
 
     const [Form, { submit, share }] = useForm({
       schemas: getSchemas,
+      formProps: {
+        layout: "vertical",
+      },
     });
 
     function handleSubmit() {
@@ -38,10 +39,12 @@ export default defineComponent({
       fetchGenderOptions();
     });
 
+    const formRef = ref();
+
     return () => (
       <div class={styles.app}>
         <div>the okyiww form version is {version}</div>
-        <Form />
+        <Form ref={formRef} />
         <Button type="primary" onClick={handleSubmit}>
           提交
         </Button>
