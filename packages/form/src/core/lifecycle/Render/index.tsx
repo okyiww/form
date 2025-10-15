@@ -1,7 +1,9 @@
 import { FormContext } from "@/core/context";
+import { useBaseStyle } from "@/core/lifecycle/hooks/useBaseStyle";
 import { useFormItemProps } from "@/core/lifecycle/hooks/useFormItemProps";
 import { useFormProps } from "@/core/lifecycle/hooks/useFormProps";
 import { useLayout } from "@/core/lifecycle/hooks/useLayout";
+import { useLayoutStyle } from "@/core/lifecycle/hooks/useLayoutStyle";
 import { ParsedSchema } from "@/core/lifecycle/Schema/types";
 import Runtime from "@/core/runtime";
 import { cloneDeep, get, isBoolean, set } from "lodash";
@@ -43,7 +45,7 @@ export default class Render {
     const show = isBoolean(schema.show) ? schema.show : true;
     return (
       show && (
-        <Layout>
+        <Layout style={useLayoutStyle(schema, this.runtime._options.layoutGap)}>
           <this.meta.FormItem
             {...formItemProps}
             label={schema.label}
@@ -78,7 +80,9 @@ export default class Render {
     // 这里使用 [{}] 是因为便于快速渲染出第一个空节点，避免因为还没处理完成导致页面一直不展示内容
     const listModel = get(modelSource, schema.field) ?? [{}];
     return (
-      <Layout.List>
+      <Layout.List
+        style={useLayoutStyle(schema, this.runtime._options.layoutGap)}
+      >
         {{
           default: () => {
             return listModel.map((model: any, modelIndex: number) => (
@@ -147,7 +151,7 @@ export default class Render {
     Layout?: any
   ) {
     return (
-      <Layout>
+      <Layout style={useLayoutStyle(schema, this.runtime._options.layoutGap)}>
         {{
           default: () => {
             return schema.children.map((childSchema: any) => {
@@ -209,9 +213,11 @@ export default class Render {
         const formProps = useFormProps(this.runtime);
         return () => (
           <this.meta.Form ref={this.formRef} {...formProps}>
-            {this.runtime._schema.parsedSchemas.value.map((schema) =>
-              this.renderParsedSchema.bind(this)(schema)
-            )}
+            <div style={useBaseStyle(this.runtime._options.layoutGap)}>
+              {this.runtime._schema.parsedSchemas.value.map((schema) =>
+                this.renderParsedSchema.bind(this)(schema)
+              )}
+            </div>
           </this.meta.Form>
         );
       },

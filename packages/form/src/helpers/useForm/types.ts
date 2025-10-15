@@ -6,4 +6,5 @@ export type UseFormOptions = {
     | RawSchemas
     | ((...args: any[]) => RawSchemas)
     | ((...args: any[]) => Promise<RawSchemas>);
+  layoutGap?: number;
 };

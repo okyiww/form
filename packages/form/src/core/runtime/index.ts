@@ -38,7 +38,7 @@ export default class Runtime {
     });
   }
 
-  share(shared: any, isModelTrigger = true) {
+  share(shared: AnyObject, isModelTrigger = true) {
     this.shared = { ...this.shared, ...shared };
     // 这个锁是为了防止 share 无限触发，导致无限循环
     if (isModelTrigger) {
@@ -65,7 +65,7 @@ export default class Runtime {
     );
   }
 
-  hydrate(model: any) {
+  hydrate(model: AnyObject) {
     this.isReady(() => {
       this._model.model.value = {
         ...this._model.model.value,

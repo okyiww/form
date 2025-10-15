@@ -174,6 +174,11 @@ export default class Model {
     return (this.allConsumed.value = Array.from(
       this.relationMap.values()
     ).every((relation) => {
+      // 这里还需要顾及一种情况，也就是用户提供了不存在 field 也不存在 defaultValue 的 relation，比如仅做展示用的组件，日期展示等等这种情况
+      // 也应当被认为是一种处理完毕的状态
+      if (!("defaultValue" in relation) && !("field" in relation)) {
+        return true;
+      }
       return relation.isConsumed;
     }));
   }

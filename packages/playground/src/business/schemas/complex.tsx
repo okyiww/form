@@ -34,6 +34,7 @@ export default defineFormSchema([
     label: "姓名2",
     field: "name2",
     component: Input,
+    span: ({ model }) => (model.name.length > 10 ? 12 : 24),
     componentProps: {
       modelValue: ({ shared }) => {
         console.log("shared", shared);
@@ -44,6 +45,8 @@ export default defineFormSchema([
   {
     type: "list",
     field: "firstlevel",
+    show: ({ model }) => model.name.length > 10,
+    span: ({ model }) => (model.name.length > 10 ? 12 : 24),
     children: [
       {
         field: "seconlevel",
