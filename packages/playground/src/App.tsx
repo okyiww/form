@@ -8,7 +8,9 @@ export default defineComponent({
     console.log("the okyiww form version is", version);
 
     function getSchemas() {
-      return import("@/business/schemas/gridTest").then((res) => res.default);
+      return import("@/business/schemas/listLabelTest").then(
+        (res) => res.default
+      );
     }
 
     const [Form, { submit, share }] = useForm({

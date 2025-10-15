@@ -54,6 +54,7 @@ export default defineFormSchema([
         children: [
           {
             component: Input,
+            label: raw((_, index) => "姓名2" + index),
             field: "secondlevel-value",
           },
           {

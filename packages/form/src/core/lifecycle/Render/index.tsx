@@ -2,8 +2,10 @@ import { FormContext } from "@/core/context";
 import { useBaseStyle } from "@/core/lifecycle/hooks/useBaseStyle";
 import { useFormItemProps } from "@/core/lifecycle/hooks/useFormItemProps";
 import { useFormProps } from "@/core/lifecycle/hooks/useFormProps";
+import { useLabel } from "@/core/lifecycle/hooks/useLabel";
 import { useLayout } from "@/core/lifecycle/hooks/useLayout";
 import { useLayoutStyle } from "@/core/lifecycle/hooks/useLayoutStyle";
+import { usePlaceholder } from "@/core/lifecycle/hooks/usePlaceholder";
 import { useRules } from "@/core/lifecycle/hooks/useRules";
 import { ParsedSchema } from "@/core/lifecycle/Schema/types";
 import Runtime from "@/core/runtime";
@@ -44,12 +46,14 @@ export default class Render {
     if (!Component) return;
     const formItemProps = useFormItemProps(this.runtime, schema, baseFieldPath);
     const show = isBoolean(schema.show) ? schema.show : true;
+    const label = useLabel(schema.label, baseFieldPath);
+    const placeholder = usePlaceholder(label, Component.name);
     return (
       show && (
         <Layout style={useLayoutStyle(schema, this.runtime._options.layoutGap)}>
           <this.meta.FormItem
             {...formItemProps}
-            label={schema.label}
+            label={label}
             rules={useRules(schema)}
           >
             <Component
@@ -58,6 +62,7 @@ export default class Render {
               onUpdate:modelValue={(value: any) => {
                 set(modelSource, schema.field, value);
               }}
+              placeholder={placeholder}
               {...schema.componentProps}
             ></Component>
           </this.meta.FormItem>
