@@ -6,6 +6,8 @@
     "dev:form": "pnpm --filter @okyiww/form dev",
     "dev:playground": "pnpm --filter playground dev",
     "dev:docs": "pnpm --filter docs dev",
+    "build:server": "pnpm --filter @okyiww/form-server build",
+    "build:app": "pnpm --filter @okyiww/form-playground build",
     "build:docs": "pnpm --filter docs build",
     "changeset": "changeset",
     "version-packages": "changeset version"

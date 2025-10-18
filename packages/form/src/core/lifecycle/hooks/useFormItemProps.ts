@@ -5,7 +5,6 @@ export function useFormItemProps(
   schema: any,
   baseFieldPath?: string
 ) {
-  console.log("schema.formItemProps", schema.formItemProps);
   const _formModelKey = runtime._adapter.adaptee.formModelKey;
   const formItemProps = {
     [_formModelKey]: baseFieldPath
