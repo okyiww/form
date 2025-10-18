@@ -39,6 +39,7 @@ jobs:
           cache: "pnpm"
       - run: |
           pnpm install
+          pnpm build:form
           pnpm build:server
           pnpm build:app
           mv ./packages/playground/dist ./packages/server/app
