@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  PROJECT_NAME: form-playground
+  PROJECT_NAME: formplayground
   IAC_TARGET: production
   IAC_FILE: form-playground.yaml
 
