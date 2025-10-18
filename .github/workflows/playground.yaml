@@ -8,7 +8,7 @@ on:
 env:
   PROJECT_NAME: form-playground
   IAC_TARGET: production
-  IAC_FILE: formplayground.yaml
+  IAC_FILE: form-playground.yaml
 
 jobs:
   setup:
