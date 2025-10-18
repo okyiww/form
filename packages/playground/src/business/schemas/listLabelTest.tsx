@@ -13,7 +13,6 @@ export default defineFormSchema([
     field: "hobbies",
     children: [
       {
-        // @ts-expect-error
         label: raw((utils, index) => {
           return "爱好类型" + index;
         }),
