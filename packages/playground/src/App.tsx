@@ -8,7 +8,7 @@ export default defineComponent({
     console.log("the okyiww form version is", version);
 
     function getSchemas() {
-      return import("@/business/schemas/formOrItem").then((res) => res.default);
+      return import("@/business/schemas/complex").then((res) => res.default);
     }
 
     const [Form, { submit, share, isReady, getFormRef }] = useForm({
@@ -39,9 +39,9 @@ export default defineComponent({
       fetchGenderOptions();
     });
 
+    const formRef = getFormRef();
     isReady(() => {
-      const formRef = getFormRef();
-      formRef.value.validate((errors: any) => {
+      formRef.value?.validate((errors: any) => {
         console.log("errors", errors);
       });
     });

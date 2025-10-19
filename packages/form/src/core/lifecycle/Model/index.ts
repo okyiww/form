@@ -1,13 +1,14 @@
 import { Metadata } from "@/core/lifecycle/Schema/types";
 import Runtime from "@/core/runtime";
-import { checkRelations, isPromise } from "@/core/services";
-import { cloneDeep, get, reverse, set } from "lodash";
+import { checkRelations } from "@/core/services";
+import { cloneDeep, reverse, set } from "lodash";
+import onChange from "on-change";
 import { ref } from "vue";
 
 // 需要考虑的是创建类型？，创建什么样的类型
 
 export default class Model {
-  constructor(runtime: Runtime) {}
+  constructor(public runtime: Runtime) {}
 
   /**
    * 我们知道 model 的关键是 field 和 defaultValue, 由于我们根本不知道这个过程什么时候
@@ -19,7 +20,11 @@ export default class Model {
   // 关系表，用于收集 field 和 defaultValue 的对应关系, key 是 path
   relationMap = new Map<string, any>();
 
-  model = ref<Record<string, any>>({});
+  model = ref<Record<string, any>>(
+    onChange({}, (path) => {
+      this.runtime._update.trigger("model", path);
+    })
+  );
 
   immutableModel = {};
 

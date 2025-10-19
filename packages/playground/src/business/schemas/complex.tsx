@@ -15,12 +15,14 @@ export default defineFormSchema([
     defaultValue: () => "231223801928",
     componentProps: {
       type: ({ model }) => {
+        console.log("mode1231231231l", model);
         return model.name?.length > 10 ? "text" : "password";
       },
     },
   },
   {
     label: ({ share, model }) => {
+      console.log("ssssssssssssssssssssssssssssss", share, model);
       share({
         name: model.nameold,
       });
@@ -37,7 +39,6 @@ export default defineFormSchema([
     span: ({ model }) => (model.name.length > 10 ? 12 : 24),
     componentProps: {
       modelValue: ({ shared }) => {
-        console.log("shared", shared);
         return shared.name;
       },
     },
@@ -344,6 +345,12 @@ export default defineFormSchema([
               resolve("最后一个触发应该");
             }, 3000);
           }),
+      },
+      {
+        label: "测试-child3",
+        field: "content3",
+        component: () => <Input />,
+        defaultValue: "应该有？",
       },
     ],
   },

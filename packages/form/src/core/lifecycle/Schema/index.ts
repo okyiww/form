@@ -1,5 +1,4 @@
 import { Metadata, ParsedSchemas } from "@/core/lifecycle/Schema/types";
-import { TriggerType } from "@/core/lifecycle/Update/types";
 import Runtime from "@/core/runtime";
 import {
   traverse,
@@ -18,7 +17,8 @@ import {
   merge,
   set,
 } from "lodash";
-import { Ref, ref, watch } from "vue";
+import { Ref, ref } from "vue";
+import { usePathTracker } from "@/core/lifecycle/hooks/usePathTracker";
 
 export default class Schema {
   rawSchemas: RawSchemas | undefined = undefined;
@@ -27,17 +27,6 @@ export default class Schema {
 
   constructor(public runtime: Runtime) {
     this.processSchemas();
-
-    watch(
-      () => this.runtime._model.model.value,
-      () => {
-        this.runtime._update.trigger();
-      },
-      {
-        immediate: true,
-        deep: true,
-      }
-    );
   }
 
   processSchemas() {
@@ -80,8 +69,9 @@ export default class Schema {
 
       this.parseSchema(schema, {
         path,
-        setter: (processedValue, metadata) => {
-          this.runtime._model.processRelation(metadata, processedValue);
+        setter: (processedValue, metadata, jumpConsume = false) => {
+          !jumpConsume &&
+            this.runtime._model.processRelation(metadata, processedValue);
 
           // 这里的预期是在确定有 field 的情况下去正确为没有提供 defaultValue 的 schema 提供 undefined 便于后续的消费
           if (
@@ -144,14 +134,16 @@ export default class Schema {
   parseProperty(propertyKey: string, propertyValue: any, metadata: Metadata) {
     merge(metadata, {
       propertyKey,
-      processedSetter(processedValue: any) {
-        metadata.setter(processedValue, metadata);
+      processedSetter(processedValue: any, jumpConsume = false) {
+        metadata.setter(processedValue, metadata, jumpConsume);
       },
     });
 
     // 解开 metadata 避免数据污染
     this.processing(propertyValue, metadata);
   }
+
+  usageTracker = new Map<string, Set<string>>();
 
   /**
    * 处理器
@@ -167,16 +159,14 @@ export default class Schema {
   processing(value: any, metadata: Metadata) {
     if (isRaw(value)) {
       if (isFunction(value)) {
+        const utils = {
+          model: this.runtime._model.model.value,
+          share: this.runtime.share.bind(this.runtime),
+          shared: this.runtime.shared,
+          refs: this.refs,
+        };
         return metadata.processedSetter?.((...args: AnyArray) =>
-          value(
-            {
-              model: this.runtime._model.model.value,
-              share: this.runtime.share.bind(this.runtime),
-              shared: this.runtime.shared,
-              refs: this.refs,
-            },
-            ...args
-          )
+          value(utils, ...args)
         );
       }
       return metadata.processedSetter?.(value);
@@ -184,16 +174,41 @@ export default class Schema {
 
     if (isFunction(value)) {
       const effectKey = `${metadata.path}.${metadata.propertyKey}`;
-      const effect = (type: TriggerType = "model") => {
-        const executionRes = value({
+      let shouldTrack = false;
+      let trackingType = undefined;
+      let trackingPath = undefined;
+
+      const utils = usePathTracker(
+        {
           model: this.runtime._model.model.value,
-          share: (shared: AnyObject) =>
-            this.runtime.share.bind(this.runtime)(shared, type === "model"),
+          share: this.runtime.share.bind(this.runtime),
           shared: this.runtime.shared,
           refs: this.refs,
-        });
+        },
+        (path) => {
+          /**
+           * 这两块代码这么写看着臃肿，但其实是为了更好的代码可读性
+           * 这表示目前只 track 两种数据的 effect，一种是使用了 model 的，另外一种是使用了 shared，这两种
+           * 数据在变化的时候需要重新执行依赖
+           */
+          if (path.startsWith("model.")) {
+            trackingType = "model";
+            trackingPath = path.replace(/^model\./, "");
+            shouldTrack = true;
+          }
+          if (path.startsWith("shared.")) {
+            trackingType = "share";
+            trackingPath = path.replace(/^shared\./, "");
+            shouldTrack = true;
+          }
+        }
+      );
+
+      const schemaEffect = () => {
+        const executionRes = value(utils);
         if (isPromise(executionRes)) {
-          this.processingNonFunction(undefined, cloneDeep(metadata));
+          // 这里主要是为了不阻塞异步数据渲染，但是通过 jumpConsume 跳过消费，在最终 then 之后才看作是消费
+          this.processingNonFunction(undefined, cloneDeep(metadata), true);
           executionRes.then((res: any) => {
             this.processingNonFunction(res, cloneDeep(metadata));
           });
@@ -203,17 +218,25 @@ export default class Schema {
 
         return this.processingNonFunction(executionRes, cloneDeep(metadata));
       };
-      if (!isOnce(value)) {
-        this.runtime._update.track(effectKey, effect);
+
+      const effectResult = schemaEffect();
+      if (!isOnce(value) && shouldTrack) {
+        this.runtime._update.track(effectKey, {
+          effectKey,
+          trackedEffect: schemaEffect,
+          trackingType,
+          trackingPath,
+        });
       }
-      return effect();
+      return effectResult;
     }
 
     this.processingNonFunction(value, metadata);
   }
 
   // 处理非函数性数据
-  processingNonFunction(value: any, metadata: Metadata) {
+  // 通过 jumpConsume 跳过消费，用于在一些中间状态提供立即的数据支持
+  processingNonFunction(value: any, metadata: Metadata, jumpConsume = false) {
     if (isValidComponent(metadata.propertyKey, value)) {
       return metadata.processedSetter?.(value);
     }
@@ -232,6 +255,6 @@ export default class Schema {
     }
 
     // 非 object 数据，可以直接认为是处理完成
-    metadata.processedSetter?.(value);
+    metadata.processedSetter?.(value, jumpConsume);
   }
 }

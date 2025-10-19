@@ -6,5 +6,5 @@ export type Metadata = {
   path: string;
   setter: (...args: any[]) => any;
   propertyKey?: string;
-  processedSetter?: (processedValue: any) => void;
+  processedSetter?: (processedValue: any, jumpConsume?: boolean) => void;
 };

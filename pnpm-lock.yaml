@@ -23,9 +23,15 @@ importers:
       '@changesets/changelog-git':
         specifier: ^0.2.1
         version: 0.2.1
+      '@vue/reactivity':
+        specifier: ^3.5.22
+        version: 3.5.22
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
+      on-change:
+        specifier: ^6.0.0
+        version: 6.0.0
     devDependencies:
       '@okyiww/nexus':
         specifier: workspace:*
@@ -2105,6 +2111,10 @@ packages:
   number-precision@1.6.0:
     resolution: {integrity: sha512-05OLPgbgmnixJw+VvEh18yNPUo3iyp4BEWJcrLu4X9W05KmMifN7Mu5exYvQXqxxeNWhvIF+j3Rij+HmddM/hQ==}
 
+  on-change@6.0.0:
+    resolution: {integrity: sha512-J7kocOS+ZNyjmW6tUUTtA7jLt8GjQlrOdz9z3yLNTvdsswO+b5lYSdMVzDczWnooyFAkkQiKyap5g/Zba+cFRA==}
+    engines: {node: '>=20'}
+
   oniguruma-parser@0.12.1:
     resolution: {integrity: sha512-8Unqkvk1RYc6yq2WBYRj4hdnsAxVze8i7iPfQr8e4uSP3tRv0rpZcbGUDvxfQQcdwHt/e9PrMvGCsa8OqG9X3w==}
 
@@ -3744,7 +3754,7 @@ snapshots:
       '@babel/types': 7.26.10
       '@vue/babel-helper-vue-transform-on': 1.4.0
       '@vue/babel-plugin-resolve-type': 1.4.0(@babel/core@7.26.10)
-      '@vue/shared': 3.5.13
+      '@vue/shared': 3.5.22
     optionalDependencies:
       '@babel/core': 7.26.10
     transitivePeerDependencies:
@@ -3867,7 +3877,7 @@ snapshots:
       '@volar/language-core': 2.4.12
       '@vue/compiler-dom': 3.5.13
       '@vue/compiler-vue2': 2.7.16
-      '@vue/shared': 3.5.13
+      '@vue/shared': 3.5.22
       alien-signals: 0.4.14
       minimatch: 9.0.5
       muggle-string: 0.4.1
@@ -3880,7 +3890,7 @@ snapshots:
       '@volar/language-core': 2.4.12
       '@vue/compiler-dom': 3.5.13
       '@vue/compiler-vue2': 2.7.16
-      '@vue/shared': 3.5.13
+      '@vue/shared': 3.5.22
       alien-signals: 1.0.7
       minimatch: 9.0.5
       muggle-string: 0.4.1
@@ -3893,7 +3903,7 @@ snapshots:
       '@volar/language-core': 2.4.12
       '@vue/compiler-dom': 3.5.13
       '@vue/compiler-vue2': 2.7.16
-      '@vue/shared': 3.5.13
+      '@vue/shared': 3.5.22
       alien-signals: 1.0.7
       minimatch: 9.0.5
       muggle-string: 0.4.1
@@ -4587,6 +4597,8 @@ snapshots:
   normalize-path@3.0.0: {}
 
   number-precision@1.6.0: {}
+
+  on-change@6.0.0: {}
 
   oniguruma-parser@0.12.1: {}
 

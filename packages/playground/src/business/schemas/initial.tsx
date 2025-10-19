@@ -7,6 +7,12 @@ export default defineFormSchema([
     label: "姓名",
     field: "name",
     component: Input,
+    xx: () =>
+      new Promise((resolve) => {
+        setTimeout(() => {
+          resolve("halo");
+        }, 1000);
+      }),
   },
   {
     label: "启用密码",
@@ -50,7 +56,9 @@ export default defineFormSchema([
     field: "gender",
     component: RadioGroup,
     componentProps: {
-      options: ({ shared }) => shared.genderOptions,
+      options: ({ shared, model }) => {
+        return shared.genderOptions;
+      },
       type: "button",
     },
     defaultValue: "male",
@@ -95,7 +103,7 @@ export default defineFormSchema([
         component: Input,
         componentProps: {
           onInput: raw((utils, value) => {
-            utils.refs.get("contacts.1.contact").value.focus();
+            utils.refs.get("counter").value.increment();
             utils.share({
               contact: value,
             });

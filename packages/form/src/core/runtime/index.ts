@@ -6,6 +6,7 @@ import Schema from "@/core/lifecycle/Schema";
 import Update from "@/core/lifecycle/Update";
 import { Component } from "@/helpers/defineFormSetup/types";
 import { UseFormOptions } from "@/helpers/useForm/types";
+import onChange from "on-change";
 import { nextTick, watch } from "vue";
 
 export default class Runtime {
@@ -16,7 +17,9 @@ export default class Runtime {
   public _options: UseFormOptions;
   public _context: FormContext;
   public _adapter: Adapter;
-  public shared = {};
+  public shared = onChange({}, (path) => {
+    this._update.trigger("share", path);
+  });
 
   constructor(options: UseFormOptions) {
     this._options = options;
@@ -38,13 +41,8 @@ export default class Runtime {
     });
   }
 
-  share(shared: AnyObject, isModelTrigger = true) {
-    this.shared = { ...this.shared, ...shared };
-    // 这个锁是为了防止 share 无限触发，导致无限循环
-    if (isModelTrigger) {
-      // 当 share 被 model 触发时，不触发 share 的更新
-      this._update.trigger("share");
-    }
+  share(shared: AnyObject) {
+    Object.assign(this.shared, shared);
   }
 
   isReady(handler: AnyFunction) {

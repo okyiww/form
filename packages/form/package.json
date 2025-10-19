@@ -30,14 +30,14 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "@okyiww/nexus": "workspace:*",
     "@types/lodash": "^4.17.20",
     "@vitejs/plugin-vue-jsx": "^4.1.2",
     "nodemon": "^3.1.9",
     "vite": "^6.2.2",
     "vite-plugin-dts": "^4.5.3",
     "vue": "^3.5.13",
-    "vue-tsc": "^2.2.4",
-    "@okyiww/nexus": "workspace:*"
+    "vue-tsc": "^2.2.4"
   },
   "publishConfig": {
     "access": "public"
@@ -47,6 +47,8 @@
   },
   "dependencies": {
     "@changesets/changelog-git": "^0.2.1",
-    "lodash": "^4.17.21"
+    "@vue/reactivity": "^3.5.22",
+    "lodash": "^4.17.21",
+    "on-change": "^6.0.0"
   }
 }

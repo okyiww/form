@@ -5,7 +5,7 @@
   "scripts": {
     "dev:form": "pnpm --filter @okyiww/form dev",
     "build:form": "pnpm --filter @okyiww/form build",
-    "dev:playground": "pnpm --filter playground dev",
+    "dev:playground": "pnpm --filter @okyiww/form-playground dev",
     "dev:docs": "pnpm --filter docs dev",
     "build:server": "pnpm --filter @okyiww/form-server build",
     "build:app": "pnpm --filter @okyiww/form-playground build",

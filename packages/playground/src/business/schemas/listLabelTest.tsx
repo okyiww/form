@@ -14,7 +14,7 @@ export default defineFormSchema([
     children: [
       {
         label: raw((utils, index) => {
-          return "爱好类型" + index;
+          return "爱好类型" + index + utils.model.name;
         }),
         field: "hobbyType",
         component: Select,

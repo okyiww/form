@@ -48,6 +48,7 @@ export default class Render {
     const show = isBoolean(schema.show) ? schema.show : true;
     const label = useLabel(schema.label, baseFieldPath);
     const placeholder = usePlaceholder(label, Component.name);
+
     return (
       show && (
         <Layout style={useLayoutStyle(schema, this.runtime._options.layoutGap)}>
