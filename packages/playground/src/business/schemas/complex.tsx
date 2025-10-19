@@ -15,14 +15,12 @@ export default defineFormSchema([
     defaultValue: () => "231223801928",
     componentProps: {
       type: ({ model }) => {
-        console.log("mode1231231231l", model);
         return model.name?.length > 10 ? "text" : "password";
       },
     },
   },
   {
     label: ({ share, model }) => {
-      console.log("ssssssssssssssssssssssssssssss", share, model);
       share({
         name: model.nameold,
       });
