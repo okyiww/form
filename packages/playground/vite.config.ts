@@ -4,6 +4,7 @@ import vueJSX from "@vitejs/plugin-vue-jsx";
 import path from "path";
 
 export default defineConfig({
+  base: "/form-playground",
   plugins: [vue(), vueJSX()],
   server: {
     port: 9751,
