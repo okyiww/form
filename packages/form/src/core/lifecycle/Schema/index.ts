@@ -174,9 +174,6 @@ export default class Schema {
 
     if (isFunction(value)) {
       const effectKey = `${metadata.path}.${metadata.propertyKey}`;
-      let shouldTrack = false;
-      let trackingType = undefined;
-      let trackingPath = undefined;
 
       const utils = usePathTracker(
         {
@@ -192,14 +189,24 @@ export default class Schema {
            * 数据在变化的时候需要重新执行依赖
            */
           if (path.startsWith("model.")) {
-            trackingType = "model";
-            trackingPath = path.replace(/^model\./, "");
-            shouldTrack = true;
+            if (!isOnce(value)) {
+              this.runtime._update.track(effectKey, {
+                effectKey,
+                trackedEffect: schemaEffect,
+                trackingType: "model",
+                trackingPath: path.replace(/^model\./, ""),
+              });
+            }
           }
           if (path.startsWith("shared.")) {
-            trackingType = "share";
-            trackingPath = path.replace(/^shared\./, "");
-            shouldTrack = true;
+            if (!isOnce(value)) {
+              this.runtime._update.track(effectKey, {
+                effectKey,
+                trackedEffect: schemaEffect,
+                trackingType: "share",
+                trackingPath: path.replace(/^shared\./, ""),
+              });
+            }
           }
         }
       );
@@ -212,23 +219,12 @@ export default class Schema {
           executionRes.then((res: any) => {
             this.processingNonFunction(res, cloneDeep(metadata));
           });
-
           return;
         }
-
         return this.processingNonFunction(executionRes, cloneDeep(metadata));
       };
 
-      const effectResult = schemaEffect();
-      if (!isOnce(value) && shouldTrack) {
-        this.runtime._update.track(effectKey, {
-          effectKey,
-          trackedEffect: schemaEffect,
-          trackingType,
-          trackingPath,
-        });
-      }
-      return effectResult;
+      return schemaEffect();
     }
 
     this.processingNonFunction(value, metadata);
