@@ -49,6 +49,6 @@
     "@changesets/changelog-git": "^0.2.1",
     "@vue/reactivity": "^3.5.22",
     "lodash": "^4.17.21",
-    "on-change": "^6.0.0"
+    "on-change": "^6.0.1"
   }
 }
