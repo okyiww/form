@@ -65,6 +65,9 @@ importers:
       '@okyiww/form':
         specifier: workspace:*
         version: link:../form
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
       pinia:
         specifier: ^3.0.3
         version: 3.0.3(typescript@5.7.3)(vue@3.5.13(typescript@5.7.3))
@@ -81,6 +84,9 @@ importers:
       '@okyiww/nexus':
         specifier: workspace:*
         version: link:../nexus
+      '@types/lodash':
+        specifier: ^4.17.20
+        version: 4.17.20
       '@vitejs/plugin-vue':
         specifier: ^5.2.1
         version: 5.2.3(vite@6.2.2(@types/node@22.13.11)(sass@1.92.1)(tsx@4.20.6))(vue@3.5.13(typescript@5.7.3))

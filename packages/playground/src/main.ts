@@ -5,6 +5,7 @@ import { createPinia } from "pinia";
 import ArcoVue from "@arco-design/web-vue";
 import "@arco-design/web-vue/dist/arco.css";
 import router from "@/router";
+import "./global.scss";
 
 const app = createApp(App);
 const pinia = createPinia();
