@@ -4,6 +4,7 @@ import { initForm } from "@okyiww/form";
 import { createPinia } from "pinia";
 import ArcoVue from "@arco-design/web-vue";
 import "@arco-design/web-vue/dist/arco.css";
+import router from "@/router";
 
 const app = createApp(App);
 const pinia = createPinia();
@@ -15,4 +16,5 @@ app
     env: "web",
   })
   .use(pinia)
+  .use(router)
   .mount("#app");

@@ -11,17 +11,19 @@
   "dependencies": {
     "@okyiww/form": "workspace:*",
     "pinia": "^3.0.3",
-    "vue": "^3.5.13"
+    "vue": "^3.5.13",
+    "vue-router": "^4.6.3"
+
   },
   "devDependencies": {
     "@arco-design/web-vue": "^2.57.0",
+    "@okyiww/nexus": "workspace:*",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vitejs/plugin-vue-jsx": "^4.1.2",
     "@vue/tsconfig": "^0.7.0",
     "sass": "^1.92.1",
     "typescript": "~5.7.2",
     "vite": "^6.2.0",
-    "vue-tsc": "^2.2.4",
-    "@okyiww/nexus": "workspace:*"
+    "vue-tsc": "^2.2.4"
   }
 }

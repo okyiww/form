@@ -32,7 +32,6 @@ export default defineFormSchema([
       return {
         options: ({ model }) => {
           return new Promise((resolve) => {
-            console.log("re triggered ");
             setTimeout(() => {
               resolve([
                 { label: "男" + model.select, value: "male" },

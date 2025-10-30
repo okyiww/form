@@ -1,9 +1,14 @@
 import { TriggerType } from "@/core/lifecycle/Update/types";
 import Runtime from "@/core/runtime";
+import { watchEffect } from "vue";
 
 export default class Update {
   effects = new Map();
-  constructor(public runtime: Runtime) {}
+  constructor(public runtime: Runtime) {
+    watchEffect(() => {
+      console.log("this.effects", this.effects);
+    });
+  }
 
   track(key: string, effect: any) {
     // 为可能存在的 share 也保存一份 track，从而隔离开来，避免无限触发
