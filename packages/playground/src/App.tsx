@@ -1,4 +1,4 @@
-import { defineComponent, onBeforeMount, onMounted, ref } from "vue";
+import { defineComponent, onBeforeMount, onMounted, ref, watch } from "vue";
 import { version, useForm } from "@okyiww/form";
 import { Button } from "@arco-design/web-vue";
 import styles from "./App.module.scss";
@@ -8,10 +8,12 @@ export default defineComponent({
     console.log("the okyiww form version is", version);
 
     function getSchemas() {
-      return import("@/business/schemas/complex").then((res) => res.default);
+      return import("@/business/schemas/stableSchema").then(
+        (res) => res.default
+      );
     }
 
-    const [Form, { submit, share, isReady, getFormRef }] = useForm({
+    const [Form, { submit, schemas, share, isReady, getFormRef }] = useForm({
       schemas: getSchemas,
       formProps: {
         layout: "vertical",
@@ -45,6 +47,17 @@ export default defineComponent({
         console.log("errors", errors);
       });
     });
+
+    watch(
+      () => schemas.value,
+      () => {
+        console.log("schemas changed", schemas.value);
+      },
+      {
+        immediate: true,
+        deep: true,
+      }
+    );
 
     return () => (
       <div class={styles.app}>
