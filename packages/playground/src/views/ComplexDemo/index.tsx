@@ -2,6 +2,7 @@ import { defineComponent, onBeforeMount, onMounted, ref, watch } from "vue";
 import { version, useForm } from "@okyiww/form";
 import { Button } from "@arco-design/web-vue";
 import styles from "./index.module.scss";
+import PageContent from "@/components/PageContent";
 
 export default defineComponent({
   setup() {
@@ -58,13 +59,21 @@ export default defineComponent({
     );
 
     return () => (
-      <div class={styles.app}>
-        <div>the okyiww form version is {version}</div>
-        <Form />
-        <Button type="primary" onClick={handleSubmit}>
-          提交
-        </Button>
-      </div>
+      <PageContent title="复杂示例">
+        {{
+          default: () => (
+            <div class={styles.app}>
+              <div>the okyiww form version is {version}</div>
+              <Form />
+            </div>
+          ),
+          headerRight: () => (
+            <Button type="primary" onClick={handleSubmit}>
+              提交
+            </Button>
+          ),
+        }}
+      </PageContent>
     );
   },
 });

@@ -1,0 +1,29 @@
+.pageContent {
+  margin: var(--space-around);
+  background-color: var(--bg-color-content);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+
+  &.fillRemaining {
+    height: calc(100vh - 60px - var(--space-around) * 2);
+  }
+
+  .header {
+    padding: var(--inset-space-around);
+    border-bottom: 1px solid var(--form-border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .title {
+      font-size: 16px;
+    }
+  }
+
+  .content {
+    padding: var(--inset-space-around);
+    flex: 1;
+    overflow-y: overlay;
+  }
+}

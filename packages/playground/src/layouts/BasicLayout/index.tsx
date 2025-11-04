@@ -23,7 +23,7 @@ export default defineComponent({
           <LayoutSider collapsed={themeStore.sidebarCollapsed}>
             <Sider />
           </LayoutSider>
-          <LayoutContent>
+          <LayoutContent class={styles.content}>
             <RouterView />
           </LayoutContent>
         </Layout>
