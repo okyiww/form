@@ -1,4 +1,4 @@
-import { grabRoutes } from "@/router/routes";
+import { applyRoutes } from "@/router/routes";
 import { keyBy } from "lodash";
 import {
   createRouter,
@@ -6,7 +6,7 @@ import {
   type RouteRecordRaw,
 } from "vue-router";
 
-export const routes = grabRoutes();
+export const routes = applyRoutes();
 export const routesByName = generateRoutesByName(routes);
 
 function generateRoutesByName(_routes, parentRoute?: RouteRecordRaw) {
@@ -27,12 +27,27 @@ function generateRoutesByName(_routes, parentRoute?: RouteRecordRaw) {
   return routesByName;
 }
 
-export function getTopParantRoute(_routeInfo: AnyObject) {
+export function getTopParantRoute(
+  _routeInfo: RouteRecordRaw & { parentRoute?: RouteRecordRaw }
+) {
   let routeInfo = { ..._routeInfo };
   while (routeInfo.parentRoute) {
     routeInfo = routeInfo.parentRoute;
   }
   return routeInfo;
+}
+
+export function filterHiddenRoutes(value: RouteRecordRaw[]) {
+  return value.filter((route) => !route.meta?.hide);
+}
+
+export function getMenuByRouteName(routeName: string) {
+  const routeInfo = routesByName[routeName];
+  const topParentRoute = getTopParantRoute(routeInfo);
+  return {
+    currentSelectedKeys: [topParentRoute.name] as string[],
+    topParentRoute,
+  };
 }
 
 const router = createRouter({

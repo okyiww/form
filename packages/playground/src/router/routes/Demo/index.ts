@@ -5,7 +5,10 @@ const Demo = {
   path: "/demo",
   name: "Demo",
   meta: {
-    hide: true,
+    locale: "示例",
+  },
+  redirect: {
+    name: "BasicDemo",
   },
   component: BasicLayout,
   children: [

@@ -1,17 +1,32 @@
-import { defineComponent, ref } from "vue";
+import { defineComponent, ref, watch } from "vue";
 import styles from "./index.module.scss";
 import { Menu, MenuItem, SubMenu } from "@arco-design/web-vue";
-import { getTopParantRoute, routes, routesByName } from "@/router";
+import { getMenuByRouteName } from "@/router";
 import { useRoute, useRouter, type RouteRecordRaw } from "vue-router";
 
 export default defineComponent({
   setup() {
     const router = useRouter();
     const route = useRoute();
-    const routeName = route.name as string;
-    const routeInfo = routesByName[routeName];
-    const topParentRoute = getTopParantRoute(routeInfo);
-    const selectedRouteName = ref(routeName);
+    const topParentRoute = ref<
+      RouteRecordRaw & { parentRoute?: RouteRecordRaw }
+    >();
+    const selectedRouteName = ref<string[]>([]);
+
+    watch(
+      () => route.name,
+      (newRouteName) => {
+        const {
+          topParentRoute: _topParentRoute,
+          currentSelectedKeys: _currentSelectedKeys,
+        } = getMenuByRouteName(newRouteName as string);
+        topParentRoute.value = _topParentRoute;
+        selectedRouteName.value = [newRouteName as string];
+      },
+      {
+        immediate: true,
+      }
+    );
 
     function renderMenu(childRoute: RouteRecordRaw) {
       const isSubMenu = (childRoute.children?.length ?? 0) > 0;
@@ -49,18 +64,17 @@ export default defineComponent({
     }
 
     function handleMenuItemClick(routeName: string) {
-      selectedRouteName.value = routeName;
       router.push({ name: routeName });
     }
 
     return () => (
       <div class={styles.sider}>
         <Menu
-          selectedKeys={[selectedRouteName.value]}
+          selectedKeys={selectedRouteName.value}
           autoOpenSelected
           onMenuItemClick={handleMenuItemClick}
         >
-          {topParentRoute.children.map(renderMenu)}
+          {topParentRoute.value?.children?.map(renderMenu)}
         </Menu>
       </div>
     );

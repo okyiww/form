@@ -1,6 +1,6 @@
 import type { RouteRecordRaw } from "vue-router";
 
-export function grabRoutes() {
+export function applyRoutes() {
   const routes = import.meta.glob("@/router/routes/**/*.ts", {
     eager: true,
   }) as Record<string, { default: RouteRecordRaw }>;
