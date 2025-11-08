@@ -1,4 +1,5 @@
 export const configs = {
+  port: process.env.PORT || 3000,
   basePath: process.env.BASE_PATH || "/form-playground",
   databaseUrl:
     process.env.DATABASE_URL ||
