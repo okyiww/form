@@ -3,12 +3,13 @@ import type { Hono } from "hono";
 import { serveStatic } from "@hono/node-server/serve-static";
 import fs from "fs";
 import path from "path";
+const __dirname = path.resolve();
 
 export function proxyFe(app: Hono) {
   app.use(
     `${configs.basePath}/assets/*`,
     serveStatic({
-      root: path.join(process.cwd(), "./app"),
+      root: "../app",
       rewriteRequestPath: (path) => {
         return path.replace(configs.basePath, "");
       },
@@ -17,7 +18,7 @@ export function proxyFe(app: Hono) {
 
   app.get(`${configs.basePath}/*`, (c) => {
     const htmlStr = fs.readFileSync(
-      path.join(process.cwd(), "./app/index.html"),
+      path.join(__dirname, "../app/index.html"),
       "utf8"
     );
     const modifiedHtmlStr = htmlStr.replace(
