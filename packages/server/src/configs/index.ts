@@ -6,5 +6,4 @@ export const configs = {
   databaseUrl:
     process.env.DATABASE_URL ||
     "postgres://username:password@localhost:9999/formserver",
-  appPath: process.env.APP_PATH || path.join(process.cwd(), "app"),
 };

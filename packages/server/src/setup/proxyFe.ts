@@ -5,10 +5,12 @@ import fs from "fs";
 import path from "path";
 
 export function proxyFe(app: Hono) {
+  const appPath = path.join(process.cwd(), "app");
+
   app.use(
     `${configs.basePath}/assets/*`,
     serveStatic({
-      root: configs.appPath,
+      root: appPath,
       rewriteRequestPath: (path) => {
         return path.replace(configs.basePath, "");
       },
@@ -16,10 +18,7 @@ export function proxyFe(app: Hono) {
   );
 
   app.get(`${configs.basePath}/*`, (c) => {
-    const htmlStr = fs.readFileSync(
-      path.join(configs.appPath, "index.html"),
-      "utf8"
-    );
+    const htmlStr = fs.readFileSync(path.join(appPath, "index.html"), "utf8");
     const modifiedHtmlStr = htmlStr.replace(
       "window.__injected_envs",
       `
