@@ -21,6 +21,10 @@ export function proxyFe(app: Hono) {
       path.join(configs.appPath, "index.html"),
       "utf8"
     );
+
+    console.log("read pwd", fs.readdirSync(process.cwd()));
+    console.log("read configs.appPath", fs.readdirSync(configs.appPath));
+    console.log("index.html", htmlStr);
     const modifiedHtmlStr = htmlStr.replace(
       "window.__injected_envs",
       `
