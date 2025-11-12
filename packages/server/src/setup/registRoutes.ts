@@ -21,7 +21,7 @@ async function* walkDir(dir: string): AsyncGenerator<string> {
 }
 
 export async function registRoutes(app: Hono) {
-  const modulesDir = path.join(__dirname, "../modules");
+  const modulesDir = path.join(process.cwd(), "src/modules");
 
   for await (const file of walkDir(modulesDir)) {
     if (/controller\.(ts|js)$/.test(file)) {
