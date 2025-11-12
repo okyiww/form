@@ -21,7 +21,7 @@ async function* walkDir(dir: string): AsyncGenerator<string> {
 }
 
 export async function registRoutes(app: Hono) {
-  app.basePath("/api");
+  app.basePath(`${configs.basePath}/api`);
   const modulesDir = path.join(__dirname, "../modules");
 
   for await (const file of walkDir(modulesDir)) {
