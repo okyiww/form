@@ -21,13 +21,12 @@ async function* walkDir(dir: string): AsyncGenerator<string> {
 }
 
 export async function registRoutes(app: Hono) {
-  app.basePath(`${configs.basePath}/api`);
   const modulesDir = path.join(__dirname, "../modules");
 
   for await (const file of walkDir(modulesDir)) {
     if (/controller\.(ts|js)$/.test(file)) {
       const module = await import(file);
-      app.route("/", module.default);
+      app.route(`${configs.basePath}/api`, module.default);
     }
   }
 }

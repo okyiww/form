@@ -3,8 +3,8 @@ import { registRoutes } from "@/setup/registRoutes";
 import { serveApp } from "@/setup/serveApp";
 import type { Hono } from "hono";
 
-export function setupApp(app: Hono) {
+export async function setupApp(app: Hono) {
+  await registRoutes(app);
   proxyFe(app);
-  registRoutes(app);
   serveApp(app);
 }
