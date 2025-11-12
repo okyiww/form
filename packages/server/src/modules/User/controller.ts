@@ -1,3 +1,7 @@
 import { Hono } from "hono";
 
-export const userRoutes = new Hono();
+const userRoutes = new Hono().basePath("/user");
+
+userRoutes.get("/", (c) => c.text("Hello World"));
+
+export default userRoutes;
