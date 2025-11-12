@@ -1,3 +1,4 @@
+import { configs } from "@/configs";
 import fs from "fs/promises";
 import type { Hono } from "hono";
 import path from "path";
@@ -20,6 +21,7 @@ async function* walkDir(dir: string): AsyncGenerator<string> {
 }
 
 export async function registRoutes(app: Hono) {
+  app.basePath("/api");
   const modulesDir = path.join(__dirname, "../modules");
 
   for await (const file of walkDir(modulesDir)) {
