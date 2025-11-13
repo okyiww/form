@@ -15,7 +15,6 @@ export default defineConfig(({ mode }) => ({
     ],
   },
   ssr: {
-    // 关键：告诉 Vite 打包所有依赖
     noExternal: /^(?!node:)/,
   },
   build: {
