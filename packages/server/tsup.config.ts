@@ -4,7 +4,7 @@ export default defineConfig({
   entry: ["src/**/*.ts"],
   format: ["esm"],
   outDir: "dist",
-  bundle: false,
+  bundle: true,
   clean: true,
   sourcemap: false,
 });

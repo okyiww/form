@@ -2,10 +2,6 @@ import { configs } from "@/configs";
 import fs from "fs/promises";
 import type { Hono } from "hono";
 import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 async function* walkDir(dir: string): AsyncGenerator<string> {
   const entries = await fs.readdir(dir, { withFileTypes: true });
@@ -21,7 +17,7 @@ async function* walkDir(dir: string): AsyncGenerator<string> {
 }
 
 export async function registRoutes(app: Hono) {
-  const modulesDir = path.join(process.cwd(), "src/modules");
+  const modulesDir = path.join(process.cwd());
 
   for await (const file of walkDir(modulesDir)) {
     if (/controller\.(ts|js)$/.test(file)) {
