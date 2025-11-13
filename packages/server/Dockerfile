@@ -1,12 +1,9 @@
 FROM node:22-alpine
-
-RUN ["ls", "-la"]
+WORKDIR /app
 
 COPY ./ /app
-
-COPY /app/node_modules /app/dist
-
-WORKDIR /app
+COPY ./node_modules /dist
+COPY ./package.json /dist
 
 RUN ["ls", "-la"]
 
