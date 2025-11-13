@@ -1,6 +1,7 @@
 import path from "path";
 
 export const configs = {
+  env: process.env.ENV || "development",
   port: process.env.PORT || 3000,
   basePath: process.env.BASE_PATH || "/form-playground",
   databaseUrl:
