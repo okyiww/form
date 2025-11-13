@@ -7,4 +7,6 @@ export default defineConfig({
   bundle: true,
   clean: true,
   sourcemap: false,
+  noExternal: [/.*/],
+  splitting: false,
 });
