@@ -14,6 +14,10 @@ export default defineConfig(({ mode }) => ({
       },
     ],
   },
+  ssr: {
+    // 关键：告诉 Vite 打包所有依赖
+    noExternal: /^(?!node:)/,
+  },
   build: {
     ssr: true,
     lib: {
@@ -22,15 +26,16 @@ export default defineConfig(({ mode }) => ({
       fileName: "index",
       formats: ["es"],
     },
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-      },
-      format: {
-        comments: false,
-      },
+    rollupOptions: {
+      external: [/^node:.*/],
     },
+    minify: mode === "production" ? "esbuild" : false,
+    esbuildOptions:
+      mode === "production"
+        ? {
+            drop: ["console", "debugger"],
+          }
+        : undefined,
     sourcemap: mode === "development" ? "inline" : false,
   },
   plugins: [
