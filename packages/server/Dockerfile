@@ -2,6 +2,7 @@ FROM node:22-alpine
 WORKDIR /app
 
 COPY ./ /app
+COPY /app/node_modules /app/dist/node_modules
 
 RUN ["ls", "-la"]
 
