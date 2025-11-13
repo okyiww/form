@@ -9,9 +9,8 @@ const controllers = import.meta.glob<{ default: any }>(
 );
 
 export async function registRoutes(app: Hono) {
-  for await (const file of Object.keys(controllers)) {
-    if (/controller\.(ts|js)$/.test(file)) {
-      const module = await import(file);
+  for await (const [filename, module] of Object.entries(controllers)) {
+    if (/controller\.(ts|js)$/.test(filename)) {
       app.route(`${configs.basePath}/api`, module.default);
     }
   }

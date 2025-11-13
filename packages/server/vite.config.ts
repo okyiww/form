@@ -22,14 +22,6 @@ export default defineConfig(({ mode }) => ({
       fileName: "index",
       formats: ["es"],
     },
-    rollupOptions: {
-      external: ["vue"],
-      output: {
-        globals: {
-          vue: "Vue",
-        },
-      },
-    },
     terserOptions: {
       compress: {
         drop_console: true,
