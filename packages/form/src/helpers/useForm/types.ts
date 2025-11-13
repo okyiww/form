@@ -9,4 +9,8 @@ export type UseFormOptions = {
   layoutGap?: number;
   formProps?: any;
   formSlots?: any;
+  ssr?: {
+    renderComponent: (componentName: string) => any;
+    GET: (params: AnyObject) => Promise<any>;
+  };
 };

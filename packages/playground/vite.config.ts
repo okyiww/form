@@ -8,6 +8,12 @@ export default defineConfig({
   plugins: [vue(), vueJSX()],
   server: {
     port: 9751,
+    proxy: {
+      "/form-playground/api": {
+        target: "http://localhost:3000",
+        changeOrigin: true,
+      },
+    },
   },
   resolve: {
     alias: {

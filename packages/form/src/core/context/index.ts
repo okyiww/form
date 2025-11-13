@@ -11,6 +11,8 @@ export class FormContext {
     string,
     DefineFormSetupOptions["templates"][number]
   >;
+  static isSsr = false;
+  static ssr = {} as AnyObject;
 
   static processContext() {
     this.templateById = keyBy(this.context.templates, "id");

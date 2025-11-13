@@ -7,18 +7,22 @@ import {
   wrapperNumericLike,
 } from "@/core/services";
 import { RawSchemas } from "@/helpers/defineFormSchema/types";
-import { isOnce, isRaw } from "@/index";
+import { FormContext, isOnce, isRaw } from "@/index";
 import {
   cloneDeep,
   get,
   isFunction,
   isPlainObject,
+  isString,
   isUndefined,
   merge,
   set,
 } from "lodash";
 import { Ref, ref } from "vue";
 import { usePathTracker } from "@/core/lifecycle/hooks/usePathTracker";
+import { useSSRComponent } from "@/core/lifecycle/hooks/useSSRComponent";
+import { deepTraverse } from "@/core/services/deepTraverse";
+import { useSPTypeHandler } from "@/core/lifecycle/hooks/useSPTypeHandler";
 
 export default class Schema {
   rawSchemas: RawSchemas | undefined = undefined;
@@ -29,16 +33,32 @@ export default class Schema {
     this.processSchemas();
   }
 
+  processSSR(schemas: RawSchemas) {
+    if (FormContext.isSsr) {
+      deepTraverse(schemas, (value, context) => {
+        if (value.__sp_type__) {
+          return useSPTypeHandler(value);
+        }
+        if (context.key === "component") {
+          return useSSRComponent(value);
+        }
+        return value;
+      });
+    }
+    console.log("schemas", schemas);
+    return schemas;
+  }
+
   processSchemas() {
     if (isFunction(this.runtime._options.schemas)) {
       const result = this.runtime._options.schemas() as any;
       if (isPromise(result)) {
         result.then((res: any) => {
           this.rawSchemas = cloneDeep(res);
-          this.traverseSchemas(cloneDeep(res));
+          this.traverseSchemas(this.processSSR(cloneDeep(res)));
         });
       } else {
-        this.traverseSchemas(cloneDeep(result));
+        this.traverseSchemas(this.processSSR(cloneDeep(result)));
       }
     } else if (isPromise(this.runtime._options.schemas)) {
       (this.runtime._options.schemas as unknown as Promise<RawSchemas>).then(

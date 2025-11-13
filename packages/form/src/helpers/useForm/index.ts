@@ -1,3 +1,4 @@
+import { FormContext } from "@/core/context";
 import Runtime from "@/core/runtime";
 import { UseFormOptions } from "@/helpers/useForm/types";
 
@@ -7,6 +8,11 @@ import { UseFormOptions } from "@/helpers/useForm/types";
 
 export function useForm(options: UseFormOptions) {
   const runtime = new Runtime(options);
+
+  if (options.ssr) {
+    FormContext.isSsr = true;
+    FormContext.ssr = options.ssr;
+  }
   return [
     runtime.render(),
     {

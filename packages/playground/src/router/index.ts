@@ -1,3 +1,4 @@
+import { configs } from "@/configs";
 import { applyRoutes } from "@/router/routes";
 import { keyBy } from "lodash";
 import {
@@ -51,7 +52,7 @@ export function getMenuByRouteName(routeName: string) {
 }
 
 const router = createRouter({
-  history: createWebHistory("/form-playground"),
+  history: createWebHistory(configs.basePath),
   routes: [...routes],
 });
 

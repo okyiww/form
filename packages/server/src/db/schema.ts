@@ -1,7 +1,7 @@
 import {
   integer,
-  pgEnum,
   pgTable,
+  text,
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";

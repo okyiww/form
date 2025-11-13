@@ -9,7 +9,7 @@ import { usePlaceholder } from "@/core/lifecycle/hooks/usePlaceholder";
 import { useRules } from "@/core/lifecycle/hooks/useRules";
 import { ParsedSchema } from "@/core/lifecycle/Schema/types";
 import Runtime from "@/core/runtime";
-import { cloneDeep, get, isBoolean, set } from "lodash";
+import { cloneDeep, get, isBoolean, isString, set } from "lodash";
 import { defineComponent, ref, toRaw } from "vue";
 
 export default class Render {
