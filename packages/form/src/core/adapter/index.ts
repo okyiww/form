@@ -25,7 +25,6 @@ export default class Adapter {
       this.runtime._options.templateId
     ) as any;
     if (template.adapter) {
-      console.log("template.adapter", template.adapter);
       const presetAdapter =
         this.presetAdapters[
           template.adapter as keyof typeof this.presetAdapters

@@ -43,20 +43,9 @@ export default defineComponent({
     const formRef = getFormRef();
     isReady(() => {
       formRef.value?.validate((errors: any) => {
-        // console.log("errors", errors);
+        console.log("errors", errors);
       });
     });
-
-    watch(
-      () => schemas.value,
-      () => {
-        // console.log("schemas changed", schemas.value);
-      },
-      {
-        immediate: true,
-        deep: true,
-      }
-    );
 
     return () => (
       <PageContent title="基础示例">

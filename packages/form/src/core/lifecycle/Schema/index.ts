@@ -22,7 +22,11 @@ import { Ref, ref } from "vue";
 import { usePathTracker } from "@/core/lifecycle/hooks/usePathTracker";
 import { useSSRComponent } from "@/core/lifecycle/hooks/useSSRComponent";
 import { deepTraverse } from "@/core/services/deepTraverse";
-import { useSPTypeHandler } from "@/core/lifecycle/hooks/useSPTypeHandler";
+import { useDispatchHandler } from "@/core/lifecycle/hooks/useDispatchHandler";
+import {
+  isDynamicValue,
+  processDynamicValue,
+} from "@/core/lifecycle/hooks/useDispatchHandler/processDynamicValue";
 
 export default class Schema {
   rawSchemas: RawSchemas | undefined = undefined;
@@ -34,18 +38,24 @@ export default class Schema {
   }
 
   processSSR(schemas: RawSchemas) {
-    if (FormContext.isSsr) {
-      deepTraverse(schemas, (value, context) => {
-        if (value.__sp_type__) {
-          return useSPTypeHandler(value);
+    if (this.runtime.isSsr) {
+      deepTraverse(schemas, (data, context) => {
+        if (
+          this.runtime.ssr.definitions?.dispatch &&
+          data[this.runtime.ssr.definitions?.dispatch]
+        ) {
+          return useDispatchHandler(data, this.runtime);
         }
         if (context.key === "component") {
-          return useSSRComponent(value);
+          return useSSRComponent(data, this.runtime); // 这里的 data 就是 componentName 了， 在 ssr 的情况下
         }
-        return value;
+        if (isString(data) && isDynamicValue(data, this.runtime)) {
+          return (utils: AnyObject) =>
+            processDynamicValue(data, utils, this.runtime);
+        }
+        return data;
       });
     }
-    console.log("schemas", schemas);
     return schemas;
   }
 
@@ -267,6 +277,9 @@ export default class Schema {
       // 更新 path，方便后续更新正确的 schema 位置
       metadata.path = `${metadata.path}.${wrapperNumericLike(propertyKey)}`;
       this.parseSchema(value, metadata);
+      return;
+    } else if (isFunction(value)) {
+      this.processing(value, metadata);
       return;
     }
 

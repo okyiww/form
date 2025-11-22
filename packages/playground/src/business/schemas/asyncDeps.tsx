@@ -22,6 +22,10 @@ export default defineFormSchema([
           value: "select2",
         },
       ],
+      onChange: raw((utils, value) => {
+        console.log("utils", utils.model.name);
+        console.log("value", value);
+      }),
     },
   },
   {
@@ -41,6 +45,45 @@ export default defineFormSchema([
           });
         },
       };
+    },
+  },
+  {
+    label: "备注",
+    field: "remark",
+    component: Input,
+    componentProps: {
+      modelValue: ({ model }) => {
+        return `${model.gender} + ${model.name}`;
+      },
+    },
+  },
+  {
+    label: "备注2",
+    field: "remark2",
+    component: Input,
+    componentProps: {
+      modelValue:
+        () =>
+        () =>
+        () =>
+        () =>
+        () =>
+        () =>
+        () =>
+        () =>
+        ({ model }) =>
+          "hello world" + model.name,
+    },
+    defaultValue: () => {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve(() => {
+            return ({ model }) => {
+              return "备注3" + model.name;
+            };
+          });
+        }, 1000);
+      });
     },
   },
 ]);

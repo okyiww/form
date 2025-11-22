@@ -4,6 +4,7 @@ import {
 } from "@/helpers/defineFormSetup/types";
 import { FormSetupLoader } from "../lifecycle/types";
 import { keyBy } from "lodash";
+import { SSR } from "@/core/context/types";
 
 export class FormContext {
   static context: DefineFormSetupOptions;
@@ -11,8 +12,6 @@ export class FormContext {
     string,
     DefineFormSetupOptions["templates"][number]
   >;
-  static isSsr = false;
-  static ssr = {} as AnyObject;
 
   static processContext() {
     this.templateById = keyBy(this.context.templates, "id");

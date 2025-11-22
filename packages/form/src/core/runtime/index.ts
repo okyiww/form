@@ -1,5 +1,6 @@
 import Adapter from "@/core/adapter";
 import { FormContext } from "@/core/context";
+import { SSR } from "@/core/context/types";
 import Model from "@/core/lifecycle/Model";
 import Render from "@/core/lifecycle/Render";
 import Schema from "@/core/lifecycle/Schema";
@@ -20,15 +21,41 @@ export default class Runtime {
   public shared = onChange({}, (path) => {
     this._update.trigger("share", path);
   });
+  public isSsr = false;
+  public ssr = {} as SSR;
+  public defaultSSRDefinitions = {
+    dispatch: "$dispatch",
+    model: "$model",
+    shared: "$shared",
+    res: "$res",
+    err: "$err",
+  };
 
   constructor(options: UseFormOptions) {
     this._options = options;
+    this.processSSR(options);
     this._context = FormContext;
     this._model = new Model(this);
     this._render = new Render(this);
     this._update = new Update(this);
     this._schema = new Schema(this);
     this._adapter = new Adapter(this);
+  }
+
+  processSSR(options: UseFormOptions) {
+    if (options.ssr) {
+      this.isSsr = true;
+      this.ssr = options.ssr;
+      this.ssr.definitions = {
+        ...this.defaultSSRDefinitions,
+        ...options.ssr.definitions,
+      };
+    } else {
+      // 这个地方在调整后即使是不写这段也没事，因为 ssr 的判定是跟着 useForm 走的
+      // 这样他有独立上下文，避免了多个 form 在一个页面时的侵染
+      this.isSsr = false;
+      this.ssr = {} as SSR;
+    }
   }
 
   render(): Component {

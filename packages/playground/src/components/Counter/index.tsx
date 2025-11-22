@@ -26,12 +26,14 @@ export default defineComponent({
     );
 
     expose({
-      increment: () => {
+      increment: (...args: any[]) => {
+        console.log("args", args);
         count.value++;
       },
       decrement: () => {
         count.value--;
       },
+      theRemark: "hello the remark",
     });
     return () => <div>{count.value}</div>;
   },
