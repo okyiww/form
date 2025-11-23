@@ -17,6 +17,17 @@
     .title {
       font-size: 20px;
       font-weight: bold;
+      font-family: "title";
+      background: linear-gradient(
+        90deg,
+        #ff3838 0%,
+        #ffb302 14%,
+        #0055ff 71%,
+        #b200ff 85%
+      );
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
   }
 

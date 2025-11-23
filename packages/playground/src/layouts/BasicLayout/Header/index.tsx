@@ -42,7 +42,7 @@ export default defineComponent({
     return () => (
       <div class={styles.header}>
         <div class={styles.sysPanel}>
-          <div class={styles.title}>Form</div>
+          <div class={styles.title}>Form Playground</div>
           <Menu
             class={styles.menu}
             selectedKeys={currentSelectedKeys.value}

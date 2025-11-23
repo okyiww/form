@@ -16,3 +16,9 @@ body,
   --bg-color: #f6f7f9;
   --bg-color-content: #ffffff;
 }
+
+@font-face {
+  // font name: Orbits-Thin
+  font-family: "title";
+  src: url("@/assets/fonts/title.woff") format("woff");
+}
