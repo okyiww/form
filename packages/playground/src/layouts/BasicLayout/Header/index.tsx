@@ -3,6 +3,7 @@ import styles from "./index.module.scss";
 import { Menu, MenuItem } from "@arco-design/web-vue";
 import { filterHiddenRoutes, getMenuByRouteName, routes } from "@/router";
 import { useRoute, useRouter, type RouteRecordRaw } from "vue-router";
+import User from "@/layouts/BasicLayout/User";
 
 export default defineComponent({
   setup() {
@@ -40,10 +41,20 @@ export default defineComponent({
 
     return () => (
       <div class={styles.header}>
-        <div class={styles.title}>Form</div>
-        <Menu selectedKeys={currentSelectedKeys.value} mode="horizontal">
-          {filterHiddenRoutes(routes).map(renderMenu)}
-        </Menu>
+        <div class={styles.sysPanel}>
+          <div class={styles.title}>Form</div>
+          <Menu
+            class={styles.menu}
+            selectedKeys={currentSelectedKeys.value}
+            mode="horizontal"
+          >
+            {filterHiddenRoutes(routes).map(renderMenu)}
+          </Menu>
+        </div>
+
+        <div class={styles.userPanel}>
+          <User />
+        </div>
       </div>
     );
   },

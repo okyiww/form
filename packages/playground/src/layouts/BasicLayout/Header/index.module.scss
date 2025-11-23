@@ -5,8 +5,22 @@
   align-items: center;
   padding: 0 16px;
 
-  .title {
-    font-size: 20px;
-    font-weight: bold;
+  .sysPanel {
+    flex: 1;
+    display: flex;
+    align-items: center;
+
+    .menu {
+      flex: 1;
+    }
+
+    .title {
+      font-size: 20px;
+      font-weight: bold;
+    }
+  }
+
+  .userPanel {
+    margin-left: auto;
   }
 }

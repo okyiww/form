@@ -5,11 +5,11 @@ export default defineComponent({
   props: {
     spaceAround: {
       type: Number,
-      default: 8,
+      default: 12,
     },
     insetSpaceAround: {
       type: Array,
-      default: [16, 8],
+      default: [8, 16],
     },
     title: {
       type: String,
