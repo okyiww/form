@@ -9,4 +9,7 @@ export const useThemeStore = defineStore("theme", {
       this.sidebarCollapsed = collapsed;
     },
   },
+  getters: {
+    isSidebarCollapsed: (state) => state.sidebarCollapsed,
+  },
 });

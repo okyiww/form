@@ -18,6 +18,7 @@ const Demo = {
       component: RouterView,
       meta: {
         locale: "面向开发人员",
+        icon: "hugeicons:developer",
       },
       children: [
         {
@@ -44,6 +45,7 @@ const Demo = {
       component: RouterView,
       meta: {
         locale: "面向程序 BPM",
+        icon: "carbon:cics-program",
       },
       children: [
         {

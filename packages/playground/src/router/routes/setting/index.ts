@@ -18,6 +18,7 @@ const Setting = {
       component: RouterView,
       meta: {
         locale: "系统管理",
+        icon: "mingcute:settings-6-line",
       },
       children: [
         {
