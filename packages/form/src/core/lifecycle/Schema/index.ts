@@ -74,12 +74,14 @@ export default class Schema {
       (this.runtime._options.schemas as unknown as Promise<RawSchemas>).then(
         (res: any) => {
           this.rawSchemas = cloneDeep(res);
-          this.traverseSchemas(cloneDeep(res));
+          this.traverseSchemas(this.processSSR(cloneDeep(res)));
         }
       );
     } else {
       this.rawSchemas = cloneDeep(this.runtime._options.schemas);
-      this.traverseSchemas(cloneDeep(this.runtime._options.schemas));
+      this.traverseSchemas(
+        this.processSSR(cloneDeep(this.runtime._options.schemas))
+      );
     }
   }
 

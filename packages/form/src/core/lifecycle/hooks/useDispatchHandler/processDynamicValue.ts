@@ -1,4 +1,5 @@
 import {
+  eventArgsSymbol,
   requestErrSymbol,
   requestResSymbol,
 } from "@/core/lifecycle/hooks/useDispatchHandler";
@@ -27,7 +28,7 @@ export function isDynamicValue(value: string, runtime: Runtime) {
 
 // 处理可能是动态数据的情况, 数据由于都是 ssr 进来的，所以一定是 string
 export function processDynamicValue(
-  value: string,
+  value: string | AnyObject | AnyArray,
   { model, shared }: AnyObject,
   runtime: Runtime,
   runtimeInfo?: AnyObject
@@ -36,6 +37,7 @@ export function processDynamicValue(
   const sharedDefinition = runtime.ssr.definitions?.shared;
   const resDefinition = runtime.ssr.definitions?.res;
   const errDefinition = runtime.ssr.definitions?.err;
+  const argsDefinition = runtime.ssr.definitions?.args;
 
   if (!isString(value)) {
     if (isArray(value)) {
@@ -97,6 +99,16 @@ export function processDynamicValue(
     }
   }
 
+  if (argsDefinition) {
+    const escaped = escapeRegExp(argsDefinition);
+    const exactMatch = new RegExp(`^${escaped}\\.([\\w\\.\\[\\]]+)$`).exec(
+      value
+    );
+    if (exactMatch) {
+      return get(runtimeInfo?.[eventArgsSymbol], exactMatch[1]);
+    }
+  }
+
   let processed = value;
 
   if (modelDefinition) {
@@ -116,6 +128,28 @@ export function processDynamicValue(
       new RegExp(`${escaped}\\.([\\w\\.\\[\\]]+)`, "g"),
       (_, path) => {
         const res = get(shared, path);
+        return res === undefined || res === null ? "" : String(res);
+      }
+    );
+  }
+
+  if (resDefinition) {
+    const escaped = escapeRegExp(resDefinition);
+    processed = processed.replace(
+      new RegExp(`${escaped}\\.([\\w\\.\\[\\]]+)`, "g"),
+      (_, path) => {
+        const res = get(runtimeInfo?.[requestResSymbol], path);
+        return res === undefined || res === null ? "" : String(res);
+      }
+    );
+  }
+
+  if (argsDefinition) {
+    const escaped = escapeRegExp(argsDefinition);
+    processed = processed.replace(
+      new RegExp(`${escaped}\\.([\\w\\.\\[\\]]+)`, "g"),
+      (_, path) => {
+        const res = get(runtimeInfo?.[eventArgsSymbol], path);
         return res === undefined || res === null ? "" : String(res);
       }
     );

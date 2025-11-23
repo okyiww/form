@@ -110,7 +110,7 @@ export default class Model {
       if (!checkResult.isListChild) {
         // 对于 group 类型下的数据，直接消费
 
-        this.model.value[relation.field] = relation.defaultValue;
+        set(this.model.value, relation.field, relation.defaultValue);
       } else {
         // 初始化或者依次获取当前 model 里的状态
         // 这里也有两种情况
@@ -120,7 +120,7 @@ export default class Model {
       }
     } else {
       // 普通消费逻辑
-      this.model.value[relation.field] = relation.defaultValue;
+      set(this.model.value, relation.field, relation.defaultValue);
     }
 
     /**

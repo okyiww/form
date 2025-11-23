@@ -29,6 +29,7 @@ export default class Runtime {
     shared: "$shared",
     res: "$res",
     err: "$err",
+    args: "$args",
   };
 
   constructor(options: UseFormOptions) {

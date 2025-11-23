@@ -6,9 +6,10 @@ export function v3Schema() {
   return [
     {
       component: "Input",
-      field: "name",
+      field: "name.test",
       label: "姓名",
       required: true,
+      componentProps: {},
     },
     {
       type: "group",
@@ -36,7 +37,7 @@ export function v3Schema() {
                   or: [
                     {
                       op: "eq",
-                      left: "$model.gender",
+                      left: "$args.0",
                       right: "$model.name",
                     },
                     {
@@ -48,7 +49,7 @@ export function v3Schema() {
                   then: [
                     {
                       $dispatch: "SET_MODEL",
-                      field: "name",
+                      field: "name.test",
                       as: {
                         $dispatch: "GET",
                         target: "/dict/genderOptions/test",
@@ -57,7 +58,7 @@ export function v3Schema() {
                           {
                             $dispatch: "SET_MODEL",
                             field: "remark",
-                            as: "remark updated $model.name",
+                            as: "remark updated $model.name.test",
                           },
                           {
                             $dispatch: "SET_MODEL",
@@ -96,13 +97,38 @@ export function v3Schema() {
     {
       component: "Input",
       field: "remark2",
-      label: "备注ee3",
+      label: "备注ee3 $shared.test",
       show: {
         $dispatch: "CONDITION",
         op: "eq",
         left: "$model.name",
         right: "$model.gender",
         then: true,
+      },
+    },
+    {
+      component: "Input",
+      field: "remark3",
+      label: "备注ee4 $shared.test",
+      show: {
+        $dispatch: "CONDITION",
+        and: [
+          {
+            op: "eq",
+            left: "1",
+            right: "1",
+          },
+          {
+            op: "eq",
+            left: "$model.name.test",
+            right: "张三",
+          },
+        ],
+        then: {
+          $dispatch: "SET_SHARED",
+          field: "test",
+          as: "$model.name.test $model.gender $model.test 被选中",
+        },
       },
     },
   ];

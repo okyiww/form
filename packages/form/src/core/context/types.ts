@@ -6,6 +6,7 @@ export interface SSR {
     shared?: string;
     res?: string;
     err?: string;
+    args?: string;
   };
   actions: {
     GET?: (params: AnyObject) => Promise<any>;

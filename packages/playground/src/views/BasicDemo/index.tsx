@@ -9,7 +9,7 @@ export default defineComponent({
     console.log("the okyiww form version is", version);
 
     function getSchemas() {
-      return import("@/business/schemas/asyncDeps").then((res) => res.default);
+      return import("@/business/schemas/testan").then((res) => res.default);
     }
 
     const [Form, { submit, schemas, share, isReady, getFormRef }] = useForm({

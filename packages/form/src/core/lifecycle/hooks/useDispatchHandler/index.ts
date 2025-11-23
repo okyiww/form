@@ -13,10 +13,12 @@ import { processDynamicValue } from "@/core/lifecycle/hooks/useDispatchHandler/p
 import { processRequests } from "@/core/lifecycle/hooks/useDispatchHandler/processRequests";
 import Runtime from "@/core/runtime";
 import { raw } from "@/helpers";
-import { get, isArray, isString } from "lodash";
+import { get, isArray, isString, set } from "lodash";
+import { nextTick } from "vue";
 
 export const requestResSymbol = Symbol("requestRes");
 export const requestErrSymbol = Symbol("requestErr");
+export const eventArgsSymbol = Symbol("eventArgs");
 
 export async function processDispatch(
   data: AnyObject,
@@ -52,8 +54,8 @@ export async function processDispatch(
         }
       });
   }
-
   if (isConditionDispatch(dispatch)) {
+    await nextTick(); // 用于获取最新数据
     if (isArray(data.and)) {
       const promises = data.and.map((condition: AnyObject) => {
         return processCompare(condition, utils, runtime, runtimeInfo);
@@ -101,34 +103,61 @@ export async function processDispatch(
   if (isEventHandlerDispatch(dispatch)) {
     return raw((utils: AnyObject, ...args: AnyArray) => {
       data.pipes.forEach((pipe: AnyObject) => {
-        processDispatch(pipe, utils, runtime, runtimeInfo);
+        processDispatch(pipe, utils, runtime, {
+          ...runtimeInfo,
+          [eventArgsSymbol]: {
+            parentArgs: runtimeInfo?.[eventArgsSymbol],
+            ...args,
+          },
+        });
       });
     });
   }
 
   if (isSetModelDispatch(dispatch)) {
     if (isString(data.as)) {
-      Object.assign(utils.model, {
-        [data.field]: processDynamicValue(data.as, utils, runtime, runtimeInfo),
-      });
-      return;
+      const setResult = set(
+        runtime._model.model.value,
+        data.field,
+        processDynamicValue(data.as, utils, runtime, runtimeInfo)
+      );
+      if ("then" in data) {
+        return processDispatch(data.then, utils, runtime, runtimeInfo);
+      }
+      return setResult;
     }
-    Object.assign(utils.model, {
-      [data.field]: await processDispatch(data.as, utils, runtime, runtimeInfo),
-    });
-    return;
+    const setResult = set(
+      runtime._model.model.value,
+      data.field,
+      await processDispatch(data.as, utils, runtime, runtimeInfo)
+    );
+    if ("then" in data) {
+      return processDispatch(data.then, utils, runtime, runtimeInfo);
+    }
+    return setResult;
   }
 
   if (isSetSharedDispatch(dispatch)) {
     if (isString(data.as)) {
-      Object.assign(utils.shared, {
-        [data.field]: processDynamicValue(data.as, utils, runtime, runtimeInfo),
-      });
-      return;
+      const setResult = set(
+        runtime.shared,
+        data.field,
+        processDynamicValue(data.as, utils, runtime, runtimeInfo)
+      );
+      if ("then" in data) {
+        return processDispatch(data.then, utils, runtime, runtimeInfo);
+      }
+      return setResult;
     }
-    Object.assign(utils.shared, {
-      [data.field]: await processDispatch(data.as, utils, runtime, runtimeInfo),
-    });
+    const setResult = set(
+      runtime.shared,
+      data.field,
+      await processDispatch(data.as, utils, runtime, runtimeInfo)
+    );
+    if ("then" in data) {
+      return processDispatch(data.then, utils, runtime, runtimeInfo);
+    }
+    return setResult;
   }
 
   if (isGetSharedDispatch(dispatch)) {
@@ -136,7 +165,7 @@ export async function processDispatch(
   }
 
   if (isGetModelDispatch(dispatch)) {
-    return get(utils.model, data.field);
+    return get(runtime._model.model.value, data.field);
   }
 
   if (isRefsDispatch(dispatch)) {
@@ -160,10 +189,20 @@ export async function processDispatch(
   }
 
   if (runtime.ssr.actions[dispatch]) {
-    return runtime.ssr.actions[dispatch](data, runtimeInfo);
+    const processedData: AnyObject = {};
+    for (const key of Object.keys(data)) {
+      const value = await processDispatch(
+        data[key],
+        utils,
+        runtime,
+        runtimeInfo
+      );
+      processedData[key] = value;
+    }
+    return runtime.ssr.actions[dispatch](processedData, runtimeInfo);
   }
 
-  return data;
+  return processDynamicValue(data, utils, runtime, runtimeInfo);
 }
 
 export function useDispatchHandler(data: any, runtime: Runtime) {

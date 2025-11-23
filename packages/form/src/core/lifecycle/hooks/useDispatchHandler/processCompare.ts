@@ -16,7 +16,7 @@ export async function processCompare(
   runtimeInfo?: AnyObject,
   skipProcess = false
 ) {
-  if (!isString(data.left) || (!isString(data.right) && !skipProcess)) {
+  if ((!isString(data.left) || !isString(data.right)) && !skipProcess) {
     let leftValue,
       rightValue,
       rightValues: AnyArray = [];
@@ -64,6 +64,7 @@ export async function processCompare(
     runtime,
     runtimeInfo
   );
+
   const rightValues = isArray(data.right)
     ? data.right.map((v: any) =>
         processDynamicValue(v, utils, runtime, runtimeInfo)
