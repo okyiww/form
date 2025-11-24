@@ -18,5 +18,8 @@
   "license": "MIT",
   "devDependencies": {
     "@changesets/cli": "^2.28.1"
+  },
+  "dependencies": {
+    "better-auth": "^1.4.1"
   }
 }

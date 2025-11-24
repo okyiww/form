@@ -1,7 +1,6 @@
 import { authGuard } from "@/router/guards/auth";
-import { useRouter } from "vue-router";
+import type { Router } from "vue-router";
 
-export function applyGuards() {
-  const router = useRouter();
+export function applyGuards(router: Router) {
   authGuard(router);
 }

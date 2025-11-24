@@ -6,5 +6,6 @@ interface Window {
     API_URL?: string;
     VERSION?: string;
     NODE_ENV?: string;
+    AUTH_BASE_PATH?: string;
   };
 }

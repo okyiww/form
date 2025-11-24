@@ -1,4 +1,5 @@
 import { configs } from "@/configs";
+import { applyGuards } from "@/router/guards";
 import { applyRoutes } from "@/router/routes";
 import { keyBy } from "lodash";
 import {
@@ -53,7 +54,27 @@ export function getMenuByRouteName(routeName: string) {
 
 const router = createRouter({
   history: createWebHistory(configs.basePath),
-  routes: [...routes],
+  routes: [
+    {
+      name: "Login",
+      path: "/login",
+      meta: {
+        skipAuth: true,
+      },
+      component: () => import("@/views/Auth/Login/index"),
+    },
+    {
+      name: "Register",
+      path: "/register",
+      meta: {
+        skipAuth: true,
+      },
+      component: () => import("@/views/Auth/Register/index"),
+    },
+    ...routes,
+  ],
 });
+
+applyGuards(router);
 
 export default router;
