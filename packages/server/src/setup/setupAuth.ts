@@ -6,6 +6,8 @@ import type { Hono } from "hono";
 import { configs } from "@/configs";
 import { username } from "better-auth/plugins";
 
+console.log("configs.betterAuthUrl", configs.betterAuthUrl);
+
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
