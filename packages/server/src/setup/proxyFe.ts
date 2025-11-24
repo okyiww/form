@@ -29,6 +29,7 @@ export function proxyFe(app: Hono) {
               API_URL: '${process.env.API_URL || "/api"}',
               VERSION: '${process.env.npm_package_version || "1.0.0"}',
               NODE_ENV: '${process.env.NODE_ENV || "development"}',
+              AUTH_BASE_PATH: '${configs.authBasePath}',
             }
           },
           configurable: false,

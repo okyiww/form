@@ -9,4 +9,5 @@ export const configs = {
     "postgres://username:password@localhost:9999/formserver",
   betterAuthSecret: process.env.BETTER_AUTH_SECRET || "secret",
   betterAuthUrl: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+  authBasePath: process.env.AUTH_BASE_PATH || "",
 };
