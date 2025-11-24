@@ -11,6 +11,7 @@ import {
 import { processCompare } from "@/core/lifecycle/hooks/useDispatchHandler/processCompare";
 import { processDynamicValue } from "@/core/lifecycle/hooks/useDispatchHandler/processDynamicValue";
 import { processRequests } from "@/core/lifecycle/hooks/useDispatchHandler/processRequests";
+import { processTransform } from "@/core/lifecycle/hooks/useDispatchHandler/processTransform";
 import Runtime from "@/core/runtime";
 import { raw } from "@/helpers";
 import { get, isArray, isString, set } from "lodash";
@@ -33,7 +34,10 @@ export async function processDispatch(
     return await processRequests(dispatch, data, utils, runtime, runtimeInfo)
       .then((res) => {
         // 使用 settimeout 是因为我 form 代码里本身就已经有了 nextTick 的控制，如果直接使用 nextTick 会无法获取最新数据
-        const requestRes = data.path ? get(res, data.path) : res;
+        let requestRes = data.path ? get(res, data.path) : res;
+        if ("transform" in data) {
+          requestRes = processTransform(requestRes, data.transform);
+        }
         setTimeout(() => {
           if ("then" in data) {
             processDispatch(data.then, utils, runtime, {
@@ -44,6 +48,7 @@ export async function processDispatch(
             });
           }
         });
+
         return requestRes;
       })
       .catch((err) => {

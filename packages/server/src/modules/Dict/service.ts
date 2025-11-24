@@ -10,3 +10,16 @@ export function getGenderOptions() {
     },
   ];
 }
+
+export function getGenderOptions2() {
+  return [
+    {
+      text: "男",
+      val: "male",
+    },
+    {
+      text: "女",
+      val: "female",
+    },
+  ];
+}
