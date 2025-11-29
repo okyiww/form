@@ -1,4 +1,4 @@
-const version = "0.0.0";
+const version = "0.0.1";
 
 export { version };
 export * from "./core/context";
