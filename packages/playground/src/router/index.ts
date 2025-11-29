@@ -75,6 +75,4 @@ const router = createRouter({
   ],
 });
 
-applyGuards(router);
-
 export default router;

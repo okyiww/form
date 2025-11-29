@@ -6,6 +6,7 @@ import { getRegistSchemas } from "@/business/regist";
 import axios from "axios";
 import { get } from "lodash";
 import Counter from "@/components/Counter";
+import { Button } from "@arco-design/web-vue";
 
 /**
  * TODO:
@@ -16,10 +17,9 @@ import Counter from "@/components/Counter";
 export default defineComponent({
   props: {},
   setup(props) {
-    const [Form] = useForm({
+    const [Form, { submit }] = useForm({
       ssr: {
         renderComponent(componentName: string) {
-          // TODO: 自定义组件也应该和这个地方一起注入以供选择
           return import(`@arco-design/web-vue`).then((res) => {
             return { ...res, Counter }[componentName];
           });
@@ -35,9 +35,23 @@ export default defineComponent({
       },
       schemas: () => getRegistSchemas().then((res) => res.data),
     });
+
+    function handleSubmit() {
+      submit().then((res: any) => {
+        console.log(res);
+      });
+    }
+
     return () => (
       <PageContent title="BPM 示例">
-        <Form />
+        {{
+          default: () => <Form />,
+          headerRight: () => (
+            <Button type="primary" onClick={handleSubmit}>
+              提交
+            </Button>
+          ),
+        }}
       </PageContent>
     );
   },

@@ -7,5 +7,5 @@ import { v8Schema } from "@/modules/Form/test_datas/v8Schema";
 import { v9Schema } from "@/modules/Form/test_datas/v9Schema";
 
 export function getRegistSchemas() {
-  return v9Schema();
+  return v3Schema();
 }

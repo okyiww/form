@@ -7,9 +7,12 @@ import "@arco-design/web-vue/dist/arco.css";
 import router from "@/router";
 import "@/utils/interceptor";
 import "./global.scss";
+import { applyGuards } from "@/router/guards";
+import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
 
 const app = createApp(App);
 const pinia = createPinia();
+pinia.use(piniaPluginPersistedstate);
 
 app
   .use(ArcoVue)
@@ -20,3 +23,5 @@ app
   .use(pinia)
   .use(router)
   .mount("#app");
+
+applyGuards(router);

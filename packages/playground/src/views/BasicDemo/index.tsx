@@ -43,7 +43,7 @@ export default defineComponent({
     const formRef = getFormRef();
     isReady(() => {
       formRef.value?.validate((errors: any) => {
-        console.log("errors", errors);
+        // console.log("errors", errors);
       });
     });
 

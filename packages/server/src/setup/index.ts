@@ -9,8 +9,8 @@ import type { Hono } from "hono";
 export async function setupApp(app: Hono) {
   setupCors(app);
   await dbMigrate();
-  await registRoutes(app);
   setupAuth(app);
+  await registRoutes(app);
 
   proxyFe(app);
   serveApp(app);

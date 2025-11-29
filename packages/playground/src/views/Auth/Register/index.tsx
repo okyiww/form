@@ -1,15 +1,18 @@
-import { defineComponent } from "vue";
+import { defineComponent, ref } from "vue";
 import styles from "./index.module.scss";
-import { useForm } from "@okyiww/form";
-import { Button, Input } from "@arco-design/web-vue";
+import { raw, useForm } from "@okyiww/form";
+import { Button, Input, Message } from "@arco-design/web-vue";
 import { useRouter } from "vue-router";
 import { authClient } from "@/business/auth";
+import Link from "@/components/Link";
+import { passwordValidator } from "@/utils/validators";
 
 export default defineComponent({
-  props: {},
-  setup(props) {
+  setup() {
+    const loading = ref(false);
     const router = useRouter();
     const [Form, { submit }] = useForm({
+      layoutGap: 0,
       schemas: [
         {
           label: "用户名",
@@ -45,7 +48,34 @@ export default defineComponent({
           required: true,
           componentProps: {
             placeholder: "请输入密码",
+            type: "password",
           },
+          rules: [
+            {
+              validator: passwordValidator,
+            },
+          ],
+        },
+        {
+          label: "确认密码",
+          field: "confirmPassword",
+          component: Input,
+          required: true,
+          componentProps: {
+            placeholder: "请输入确认密码",
+            type: "password",
+          },
+          rules: ({ model }) => [
+            {
+              validator: (value, callback) => {
+                if (value !== model.password) {
+                  callback("两次密码不一致");
+                } else {
+                  callback();
+                }
+              },
+            },
+          ],
         },
       ],
       formProps: {
@@ -55,8 +85,20 @@ export default defineComponent({
 
     function handleSubmit() {
       submit().then((res: any) => {
-        authClient.signUp.email(res).then(({ data }) => {
-          console.log(data);
+        loading.value = true;
+        authClient.signUp.email(res).then(({ error }) => {
+          if (error) {
+            Message.error(error.message || "注册失败");
+            loading.value = false;
+            return;
+          }
+          router
+            .replace({
+              name: "Home",
+            })
+            .then(() => {
+              loading.value = false;
+            });
         });
       });
     }
@@ -70,13 +112,14 @@ export default defineComponent({
     return () => (
       <div class={styles.login}>
         <div class={styles.form}>
+          <div class={styles.header}>注册</div>
           <Form />
-          <Button type="primary" onClick={handleLogin}>
-            登录
+          <Button type="primary" onClick={handleSubmit} loading={loading.value}>
+            创建账户
           </Button>
-          <Button type="primary" onClick={handleSubmit}>
-            注册
-          </Button>
+          <div class={styles.footer}>
+            已有账号? <Link onClick={handleLogin}>前往登录</Link>
+          </div>
         </div>
       </div>
     );
