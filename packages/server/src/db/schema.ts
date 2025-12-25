@@ -75,26 +75,19 @@ export const verification = pgTable(
   (table) => [index("verification_identifier_idx").on(table.identifier)]
 );
 
-// @ts-expect-error
 export const userRelations = relations(user, ({ many }) => ({
-  // @ts-expect-error
   sessions: many(session),
-  // @ts-expect-error
   accounts: many(account),
 }));
 
-// @ts-expect-error
 export const sessionRelations = relations(session, ({ one }) => ({
-  // @ts-expect-error
   user: one(user, {
     fields: [session.userId],
     references: [user.id],
   }),
 }));
 
-// @ts-expect-error
 export const accountRelations = relations(account, ({ one }) => ({
-  // @ts-expect-error
   user: one(user, {
     fields: [account.userId],
     references: [user.id],

@@ -111,8 +111,9 @@ export default class Render {
                   },
                   delete: ({ render }: any) => {
                     const Delete = render();
+                    const minLen = schema.minLen ?? 1;
                     return (
-                      listModel.length > 1 && (
+                      listModel.length > minLen && (
                         <Delete
                           disabled={!this.runtime._model.allConsumed.value}
                           onClick={() => {
