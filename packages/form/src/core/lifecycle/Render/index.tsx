@@ -232,7 +232,14 @@ export default class Render {
       setup: () => {
         const formProps = useFormProps(this.runtime);
         return () => (
-          <this.meta.Form ref={this.formRef} {...formProps}>
+          <this.meta.Form
+            ref={this.formRef}
+            {...formProps}
+            {...{
+              [this.runtime._adapter.adaptee.formModelName]:
+                this.runtime._model.model.value,
+            }}
+          >
             {{
               ...this.runtime._options.formSlots,
               default: () => (

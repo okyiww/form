@@ -99,6 +99,7 @@ export default class Runtime {
         ...this._model.model.value,
         ...model,
       };
+      console.log("hydrate", this._model.model.value);
     });
   }
 

@@ -12,11 +12,23 @@ export default defineComponent({
       return import("@/business/schemas/testan").then((res) => res.default);
     }
 
-    const [Form, { submit, schemas, share, isReady, getFormRef }] = useForm({
-      schemas: getSchemas,
-      formProps: {
-        layout: "vertical",
-      },
+    const [Form, { submit, hydrate, schemas, share, isReady, getFormRef }] =
+      useForm({
+        schemas: getSchemas,
+        formProps: {
+          layout: "vertical",
+        },
+      });
+
+    onMounted(() => {
+      hydrate({
+        test: [
+          {
+            name2: "test1",
+          },
+          { name2: "test2" },
+        ],
+      });
     });
 
     function handleSubmit() {
@@ -41,11 +53,6 @@ export default defineComponent({
     });
 
     const formRef = getFormRef();
-    isReady(() => {
-      formRef.value?.validate((errors: any) => {
-        // console.log("errors", errors);
-      });
-    });
 
     return () => (
       <PageContent title="基础示例">
