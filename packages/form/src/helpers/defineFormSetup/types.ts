@@ -58,6 +58,7 @@ export type DefineFormSetupOptions = {
   default: {
     templateId: string;
     formProps?: AnyObject;
+    listLayoutGap?: number;
     gapBgColor?: string;
     layoutGap?: number;
   };

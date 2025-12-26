@@ -14,3 +14,16 @@ export function useBaseStyle(value = 16): AnyObject {
     background: FormContext.context.default?.gapBgColor ?? "transparent",
   };
 }
+
+export function useListBaseStyle(value = 16): AnyObject {
+  const gap = FormContext.context.default?.listLayoutGap ?? value;
+  return {
+    gap: `${gap}px`,
+    width: "100%",
+    height: "100%",
+    display: "flex",
+    flexWrap: "wrap",
+    justifyContent: "flex-start",
+    background: FormContext.context.default?.gapBgColor ?? "transparent",
+  };
+}

@@ -1,5 +1,8 @@
 import { FormContext } from "@/core/context";
-import { useBaseStyle } from "@/core/lifecycle/hooks/useBaseStyle";
+import {
+  useBaseStyle,
+  useListBaseStyle,
+} from "@/core/lifecycle/hooks/useBaseStyle";
 import { useFormItemProps } from "@/core/lifecycle/hooks/useFormItemProps";
 import { useFormProps } from "@/core/lifecycle/hooks/useFormProps";
 import { useLabel } from "@/core/lifecycle/hooks/useLabel";
@@ -96,18 +99,26 @@ export default class Render {
               <Layout.ListItem>
                 {{
                   default: () => {
-                    return schema.children.map((childSchema: any) => {
-                      return this.renderParsedSchema(
-                        childSchema,
-                        model,
-                        baseFieldPath
-                          ? `${baseFieldPath}.${schema.field}.${modelIndex}`
-                          : `${schema.field}.${modelIndex}`,
-                        baseModelPath
-                          ? `${baseModelPath}.${schema.field}.[${0}]`
-                          : `${schema.field}.[${0}]`
-                      );
-                    });
+                    return (
+                      <div
+                        style={useListBaseStyle(
+                          this.runtime._options.listLayoutGap
+                        )}
+                      >
+                        {schema.children.map((childSchema: any) => {
+                          return this.renderParsedSchema(
+                            childSchema,
+                            model,
+                            baseFieldPath
+                              ? `${baseFieldPath}.${schema.field}.${modelIndex}`
+                              : `${schema.field}.${modelIndex}`,
+                            baseModelPath
+                              ? `${baseModelPath}.${schema.field}.[${0}]`
+                              : `${schema.field}.[${0}]`
+                          );
+                        })}
+                      </div>
+                    );
                   },
                   delete: ({ render }: any) => {
                     const Delete = render();
