@@ -2,8 +2,8 @@
 
 import { FormContext } from "@/core/context";
 
-export function useBaseStyle(value = 16): AnyObject {
-  const gap = FormContext.context.default?.layoutGap ?? value;
+export function useBaseStyle(value?: number): AnyObject {
+  const gap = value ?? FormContext.context.default?.layoutGap ?? 16;
   return {
     gap: `${gap}px`,
     width: "100%",
@@ -15,8 +15,8 @@ export function useBaseStyle(value = 16): AnyObject {
   };
 }
 
-export function useListBaseStyle(value = 16): AnyObject {
-  const gap = FormContext.context.default?.listLayoutGap ?? value;
+export function useListBaseStyle(value?: number): AnyObject {
+  const gap = value ?? FormContext.context.default?.listLayoutGap ?? 16;
   return {
     gap: `${gap}px`,
     width: "100%",

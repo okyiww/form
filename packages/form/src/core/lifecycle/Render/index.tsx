@@ -91,6 +91,7 @@ export default class Render {
     const listModel = get(modelSource, schema.field) ?? [{}];
     return (
       <Layout.List
+        listModel={listModel}
         style={useLayoutStyle(schema, this.runtime._options.layoutGap)}
       >
         {{
