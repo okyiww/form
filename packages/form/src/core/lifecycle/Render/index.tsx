@@ -51,6 +51,7 @@ export default class Render {
     const show = isBoolean(schema.show) ? schema.show : true;
     const label = useLabel(schema.label, baseFieldPath);
     const placeholder = usePlaceholder(label, Component.name);
+    console.log("componentSlots", schema.componentSlots);
 
     return (
       show && (
@@ -71,7 +72,9 @@ export default class Render {
                   }}
                   placeholder={placeholder}
                   {...schema.componentProps}
-                ></Component>
+                >
+                  {{ ...schema.componentSlots }}
+                </Component>
               ),
             }}
           </this.meta.FormItem>
