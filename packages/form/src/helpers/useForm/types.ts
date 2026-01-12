@@ -12,4 +12,5 @@ export type UseFormOptions = {
   formProps?: any;
   formSlots?: any;
   ssr?: SSR;
+  namesToRemember?: Record<string, string>;
 };

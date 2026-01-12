@@ -18,18 +18,12 @@ export default defineComponent({
         formProps: {
           layout: "vertical",
         },
+        namesToRemember: {
+          namXX__e: "test.name",
+          age: "test.age",
+          nameOO: "test.nameOO",
+        },
       });
-
-    onMounted(() => {
-      hydrate({
-        test: [
-          {
-            name2: "test1",
-          },
-          { name2: "test2" },
-        ],
-      });
-    });
 
     function handleSubmit() {
       submit().then((res: any) => {

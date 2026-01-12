@@ -9,6 +9,7 @@ import { Component } from "@/helpers/defineFormSetup/types";
 import { UseFormOptions } from "@/helpers/useForm/types";
 import onChange from "on-change";
 import { nextTick, watch } from "vue";
+import { transformModelByRememberedNames } from "@/helpers/namesToRemember";
 
 export default class Runtime {
   public _schema: Schema;
@@ -65,6 +66,12 @@ export default class Runtime {
 
   submit() {
     return this._adapter.adaptee.validate().then(() => {
+      if (this._options.namesToRemember) {
+        return transformModelByRememberedNames(
+          this._model.model.value,
+          this._options.namesToRemember
+        );
+      }
       return this._model.model.value;
     });
   }

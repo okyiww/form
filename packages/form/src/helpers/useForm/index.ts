@@ -20,6 +20,7 @@ export function useForm(options: UseFormOptions) {
       isReady: runtime.isReady.bind(runtime),
       hydrate: runtime.hydrate.bind(runtime),
       getFormRef: runtime.getFormRef.bind(runtime),
+      namesToRemember: runtime._options.namesToRemember,
     },
   ];
 }
