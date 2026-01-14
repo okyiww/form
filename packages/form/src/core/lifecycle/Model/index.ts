@@ -23,17 +23,14 @@ export default class Model {
 
   model = ref<Record<string, any>>(
     onChange({}, (path, value) => {
-      console.log("triggedr");
       this.runtime._update.trigger("model", path);
       if (!this.runtime._options.noAutoLookup) {
-        console.log("has", path);
         useLookupProcess(path, value, this.runtime);
       }
     })
   );
 
   triggerLookup() {
-    console.log("this.model.value", this.model.value);
     Object.entries(this.model.value).forEach(([path, value]) => {
       useLookupProcess(path, value, this.runtime);
     });

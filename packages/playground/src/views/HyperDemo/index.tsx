@@ -32,7 +32,6 @@ export default defineComponent({
         triggerLookup,
       },
     ] = useForm({
-      noAutoLookup: true,
       schemas: getSchemas,
       formProps: {
         layout: "vertical",
@@ -40,16 +39,6 @@ export default defineComponent({
     });
 
     const lookupResults = getLookupResults();
-
-    watch(
-      () => lookupResults.value,
-      (val) => {
-        console.log("lookupResults", val);
-      },
-      {
-        immediate: true,
-      }
-    );
 
     function handleSubmit() {
       submit().then((res: any) => {

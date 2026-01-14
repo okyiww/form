@@ -1,4 +1,11 @@
-import { Input, InputNumber, RadioGroup, Select } from "@arco-design/web-vue";
+import {
+  Cascader,
+  Input,
+  InputNumber,
+  RadioGroup,
+  Select,
+  TreeSelect,
+} from "@arco-design/web-vue";
 import { defineFormSchema, raw } from "@okyiww/form";
 import { ref } from "vue";
 
@@ -29,7 +36,6 @@ export default defineFormSchema([
       source: "options",
       match: "value",
       format: (matchResult) => {
-        console.log("matchResult", matchResult);
         return matchResult.map((item) => item.label).join(",");
       },
     }),
@@ -50,6 +56,117 @@ export default defineFormSchema([
       match: "value",
       format: (matchResult) => {
         return matchResult.map((item) => item.label).join(",");
+      },
+    }),
+  },
+  {
+    label: ({ model }) => model.name + "hello",
+    field: "test",
+    component: Cascader,
+    componentProps: {
+      multiple: true,
+      pathMode: true,
+      options: [
+        {
+          value: "beijing",
+          label: "北京",
+          children: [
+            {
+              value: "chaoyang",
+              label: "朝阳",
+              children: [
+                {
+                  value: "datunli",
+                  label: "大屯里",
+                },
+              ],
+            },
+            {
+              value: "haidian",
+              label: "Haidian",
+            },
+            {
+              value: "dongcheng",
+              label: "Dongcheng",
+            },
+            {
+              value: "xicheng",
+              label: "Xicheng",
+              children: [
+                {
+                  value: "jinrongjie",
+                  label: "Jinrongjie",
+                },
+                {
+                  value: "tianqiao",
+                  label: "Tianqiao",
+                },
+              ],
+            },
+          ],
+        },
+        {
+          value: "shanghai",
+          label: "Shanghai",
+          children: [
+            {
+              value: "huangpu",
+              label: "Huangpu",
+            },
+          ],
+        },
+      ],
+    },
+    lookup: raw({
+      source: "options",
+      match: "value",
+      format: (matchResult) => {
+        return matchResult
+          .map((item) => item.map((item) => item.label).join(","))
+          .join("; ");
+      },
+    }),
+  },
+  {
+    label: "测试Tree",
+    field: "testTree",
+    component: TreeSelect,
+    componentProps: {
+      multiple: true,
+      data: [
+        {
+          key: "node1",
+          title: "Trunk",
+          disabled: true,
+          children: [
+            {
+              key: "node2",
+              title: "Leaf",
+            },
+          ],
+        },
+        {
+          key: "node3",
+          title: "Trunk2",
+          children: [
+            {
+              key: "node4",
+              title: "Leaf",
+            },
+            {
+              key: "node5",
+              title: "Leaf",
+            },
+          ],
+        },
+      ],
+    },
+    lookup: raw({
+      source: "data",
+      match: "key",
+      childrenKey: "children",
+      format: (matchResult) => {
+        return matchResult.map((item) => item.title).join(",");
       },
     }),
   },
