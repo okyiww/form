@@ -8,7 +8,15 @@ import Update from "@/core/lifecycle/Update";
 import { Component } from "@/helpers/defineFormSetup/types";
 import { UseFormOptions } from "@/helpers/useForm/types";
 import onChange from "on-change";
-import { nextTick, watch } from "vue";
+import {
+  computed,
+  ComputedRef,
+  nextTick,
+  reactive,
+  ref,
+  Ref,
+  watch,
+} from "vue";
 import { transformModelByRememberedNames } from "@/helpers/namesToRemember";
 
 export default class Runtime {
@@ -32,6 +40,8 @@ export default class Runtime {
     err: "$err",
     args: "$args",
   };
+  public lookups: Ref<Map<string, any>> = ref(new Map());
+  public lookupResults: Ref<Map<string, any>> = ref(new Map());
 
   constructor(options: UseFormOptions) {
     this._options = options;
@@ -42,6 +52,18 @@ export default class Runtime {
     this._update = new Update(this);
     this._schema = new Schema(this);
     this._adapter = new Adapter(this);
+  }
+
+  getLookupResults(): ComputedRef<Map<string, any>>;
+  getLookupResults(path: string): ComputedRef<any>;
+  getLookupResults(path?: string): ComputedRef<any> {
+    // 不传 path，返回全量
+    if (path === undefined) {
+      return computed(() => Array.from(this.lookupResults.value.values()));
+    }
+
+    // 传 path，返回指定项
+    return computed(() => this.lookupResults.value.get(path));
   }
 
   processSSR(options: UseFormOptions) {
@@ -101,11 +123,13 @@ export default class Runtime {
   }
 
   hydrate(model: AnyObject) {
-    this.isReady(() => {
-      this._model.model.value = {
-        ...this._model.model.value,
-        ...model,
-      };
+    return new Promise((resolve) => {
+      this.isReady(() => {
+        Object.keys(model).forEach((key) => {
+          this._model.model.value[key] = model[key];
+        });
+        resolve(this._model.model.value);
+      });
     });
   }
 

@@ -1,3 +1,4 @@
+import { useLookupProcess } from "@/core/lifecycle/hooks/useLookup";
 import { Metadata } from "@/core/lifecycle/Schema/types";
 import Runtime from "@/core/runtime";
 import { checkRelations } from "@/core/services";
@@ -21,10 +22,22 @@ export default class Model {
   relationMap = new Map<string, any>();
 
   model = ref<Record<string, any>>(
-    onChange({}, (path) => {
+    onChange({}, (path, value) => {
+      console.log("triggedr");
       this.runtime._update.trigger("model", path);
+      if (!this.runtime._options.noAutoLookup) {
+        console.log("has", path);
+        useLookupProcess(path, value, this.runtime);
+      }
     })
   );
+
+  triggerLookup() {
+    console.log("this.model.value", this.model.value);
+    Object.entries(this.model.value).forEach(([path, value]) => {
+      useLookupProcess(path, value, this.runtime);
+    });
+  }
 
   immutableModel = {};
 

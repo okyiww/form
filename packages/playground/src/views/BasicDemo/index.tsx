@@ -44,6 +44,9 @@ export default defineComponent({
 
     onBeforeMount(() => {
       fetchGenderOptions();
+      hydrate({
+        name: "A",
+      });
     });
 
     const formRef = getFormRef();

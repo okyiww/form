@@ -8,6 +8,7 @@ import { useFormProps } from "@/core/lifecycle/hooks/useFormProps";
 import { useLabel } from "@/core/lifecycle/hooks/useLabel";
 import { useLayout } from "@/core/lifecycle/hooks/useLayout";
 import { useLayoutStyle } from "@/core/lifecycle/hooks/useLayoutStyle";
+import { useLookup } from "@/core/lifecycle/hooks/useLookup";
 import { usePlaceholder } from "@/core/lifecycle/hooks/usePlaceholder";
 import { useRules } from "@/core/lifecycle/hooks/useRules";
 import { ParsedSchema } from "@/core/lifecycle/Schema/types";
@@ -51,6 +52,9 @@ export default class Render {
     const show = isBoolean(schema.show) ? schema.show : true;
     const label = useLabel(schema.label, baseFieldPath);
     const placeholder = usePlaceholder(label, Component.name);
+
+    // 这个时候啥都有了，可以做收集了，但是还不知道这个时候收集会不会晚了，需要配合 hydrate 一起试试效果
+    schema.lookup && useLookup(schema, fieldTarget, this.runtime);
 
     return (
       show && (

@@ -17,9 +17,9 @@ export default defineFormSchema([
   },
   {
     label: "年龄",
-    field: "age",
+    field: "name",
     required: true,
-    component: Select,
+    component: Input,
     componentProps: {
       options: ({ model }) =>
         model.name === "A"
@@ -33,6 +33,17 @@ export default defineFormSchema([
               { label: "5", value: 5 },
               { label: "6", value: 6 },
             ],
+    },
+  },
+  {
+    label: ({ model }) => model.name + "hello",
+    field: "gender2",
+    component: Select,
+    componentProps: {
+      options: [
+        { label: "男", value: "male" },
+        { label: "女", value: "female" },
+      ],
     },
   },
 ]);

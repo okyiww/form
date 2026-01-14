@@ -21,6 +21,8 @@ export function useForm(options: UseFormOptions) {
       hydrate: runtime.hydrate.bind(runtime),
       getFormRef: runtime.getFormRef.bind(runtime),
       namesToRemember: runtime._options.namesToRemember,
+      getLookupResults: runtime.getLookupResults.bind(runtime),
+      triggerLookup: runtime._model.triggerLookup.bind(runtime._model),
     },
   ];
 }

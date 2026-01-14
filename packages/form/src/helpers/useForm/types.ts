@@ -3,6 +3,7 @@ import { RawSchemas } from "@/helpers/defineFormSchema/types";
 
 export type UseFormOptions = {
   templateId?: string;
+  noAutoLookup?: boolean;
   schemas:
     | RawSchemas
     | ((...args: any[]) => RawSchemas)

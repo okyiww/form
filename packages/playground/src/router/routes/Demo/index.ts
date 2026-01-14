@@ -37,6 +37,14 @@ const Demo = {
           },
           component: () => import("@/views/ComplexDemo"),
         },
+        {
+          path: "hyper-demo",
+          name: "HyperDemo",
+          meta: {
+            locale: "进阶示例",
+          },
+          component: () => import("@/views/HyperDemo"),
+        },
       ],
     },
     {
