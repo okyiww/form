@@ -3,6 +3,7 @@ import {
   Input,
   InputNumber,
   RadioGroup,
+  RangePicker,
   Select,
   TreeSelect,
 } from "@arco-design/web-vue";
@@ -169,5 +170,14 @@ export default defineFormSchema([
         return matchResult.map((item) => item.title).join(",");
       },
     }),
+  },
+  {
+    label: "测试Date",
+    field: "date123",
+    component: RangePicker,
+    lookup: raw((matchResult) => {
+      return matchResult.join(" - ");
+    }),
+    placeholder: ["请选择1日期", "请选择日期"],
   },
 ]);

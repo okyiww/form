@@ -25,7 +25,8 @@ export function useLookup(
   const lookup = runtime.lookups.value.get(fieldTarget);
   if (
     (lookup && lookup.source && lookup.match) ||
-    lookup?.schema?.lookup === true
+    lookup?.schema?.lookup === true ||
+    isFunction(lookup?.schema?.lookup)
   ) {
     return;
   }
@@ -45,22 +46,23 @@ export function useLookup(
 export function useLookupProcess(path: string, value: any, runtime: Runtime) {
   for (const lookup of runtime.lookups.value.values()) {
     if (!(lookup.fieldTarget === path)) continue;
-    if (lookup.schema.lookup === true) {
+
+    if (lookup.schema.lookup === true || isFunction(lookup.schema.lookup)) {
       if (!value) {
-        runtime.lookupResults.value.delete(lookup.fieldTarget);
-        return;
+        return runtime.lookupResults.value.delete(lookup.fieldTarget);
       }
       runtime.lookupResults.value.set(lookup.fieldTarget, {
         label: lookup.schema.label,
-        matchResult: value,
+        matchResult: lookup.schema.lookup?.format
+          ? lookup.schema.lookup?.format(value)
+          : value,
       });
       return;
     }
     const matchResult = findByKey(lookup.source, lookup.match, value);
 
     if (!matchResult || isEmpty(matchResult)) {
-      runtime.lookupResults.value.delete(lookup.fieldTarget);
-      return;
+      return runtime.lookupResults.value.delete(lookup.fieldTarget);
     }
     runtime.lookupResults.value.set(lookup.fieldTarget, {
       label: lookup.schema.label,

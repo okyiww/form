@@ -73,7 +73,7 @@ export default class Render {
                   onUpdate:modelValue={(value: any) => {
                     set(modelSource, schema.field, value);
                   }}
-                  placeholder={placeholder}
+                  placeholder={schema.placeholder ?? placeholder}
                   {...schema.componentProps}
                 >
                   {{ ...schema.componentSlots }}
