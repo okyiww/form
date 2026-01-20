@@ -128,7 +128,6 @@ export default class Runtime {
   hydrate(model: AnyObject) {
     return new Promise((resolve) => {
       this.isReady(() => {
-        console.log("here?");
         const transformedModel = this._options.namesToRemember
           ? reverseTransformModelByRememberedNames(
               model,
