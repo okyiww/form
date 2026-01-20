@@ -11,6 +11,8 @@ import { FormContext, isOnce, isRaw } from "@/index";
 import {
   cloneDeep,
   get,
+  isArray,
+  isEmpty,
   isFunction,
   isPlainObject,
   isString,
@@ -18,7 +20,7 @@ import {
   merge,
   set,
 } from "lodash";
-import { Ref, ref } from "vue";
+import { Ref, ref, isRef, isReactive, watch } from "vue";
 import { usePathTracker } from "@/core/lifecycle/hooks/usePathTracker";
 import { useSSRComponent } from "@/core/lifecycle/hooks/useSSRComponent";
 import { deepTraverse } from "@/core/services/deepTraverse";
@@ -295,6 +297,44 @@ export default class Schema {
       return;
     }
 
+    // 处理响应式数据（ref 或 reactive）
+    // 当响应式数据变化时，重新处理并触发 lookup 计算
+    if (isRef(value) || isReactive(value)) {
+      // 先设置当前值
+      const currentValue = isRef(value) ? value.value : value;
+      metadata.processedSetter?.(currentValue, jumpConsume);
+      /**
+       * 判断响应式数据是否已就绪
+       * - undefined/null: 未就绪
+       * - 空数组: 未就绪（常见的异步数据初始状态）
+       * - 空普通对象: 未就绪（可能是占位符）
+       * - 其他值（包括 0, false, 非空字符串、函数等）: 就绪
+       */
+      const isReady = (val: any) => {
+        if (isUndefined(val) || val === null) return false;
+        if (isArray(val) && isEmpty(val)) return false;
+        if (isPlainObject(val) && isEmpty(val)) return false;
+        return true;
+      };
+      // 如果当前值已经就绪，不需要监听
+      if (isReady(currentValue)) {
+        return;
+      }
+      // 监听变化，当数据从空变为有值时设置并停止监听
+      const stopWatch = watch(
+        () => isRef(value) ? value.value : value,
+        (newValue) => {
+          metadata.processedSetter?.(newValue);
+          // 数据就绪后停止监听，避免持续监听的性能开销
+          if (isReady(newValue)) {
+            stopWatch();
+          }
+        },
+        { deep: true }
+      );
+      return;
+    }
+
     // 非 object 数据，可以直接认为是处理完成
     metadata.processedSetter?.(value, jumpConsume);
   }
@@ -302,7 +342,6 @@ export default class Schema {
   // 当 componentProps 下的属性（如 options）更新时，触发对应字段的 lookup 计算
   triggerLookupForSource(sourceKey: string | undefined, field: string | undefined) {
     if (!sourceKey || !field) return;
-    
     // 遍历所有 lookup，找到匹配的进行触发
     for (const [fieldTarget, lookup] of this.runtime.lookups.value.entries()) {
       if (lookup.sourceKey === sourceKey && fieldTarget === field) {
