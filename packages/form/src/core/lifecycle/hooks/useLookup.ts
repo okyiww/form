@@ -23,20 +23,17 @@ export function useLookup(
   runtime: Runtime
 ) {
   const lookup = runtime.lookups.value.get(fieldTarget);
-  if (
-    (lookup && lookup.source && lookup.match) ||
-    lookup?.schema?.lookup === true ||
-    isFunction(lookup?.schema?.lookup)
-  ) {
+  // 如果已经注册过该字段的 lookup，直接返回避免重复注册导致无限循环
+  if (lookup) {
     return;
   }
-  let source = schema.lookup.source;
-  // 默认字符串是定义的 componentProps 中的结果集
-  if (isString(schema.lookup.source)) {
-    source = get(schema.componentProps, schema.lookup.source);
-  }
+  
+  // 记录 sourceKey 用于后续动态获取最新的 source
+  const sourceKey = isString(schema.lookup.source) ? schema.lookup.source : null;
+  
   runtime.lookups.value.set(fieldTarget, {
-    source,
+    // source 不在这里固定，而是在 useLookupProcess 时动态获取
+    sourceKey,
     match: schema.lookup.match,
     fieldTarget,
     schema,
@@ -59,7 +56,17 @@ export function useLookupProcess(path: string, value: any, runtime: Runtime) {
       });
       return;
     }
-    const matchResult = findByKey(lookup.source, lookup.match, value);
+    // 动态获取最新的 source，而不是使用注册时的固定值
+    // 这样可以正确处理异步 options 的场景
+    let source = lookup.schema.lookup?.source;
+    if (lookup.sourceKey) {
+      source = get(lookup.schema.componentProps, lookup.sourceKey);
+    }
+    // 如果 source 还没准备好（异步数据还没返回），跳过本次计算
+    if (source === undefined) {
+      return;
+    }
+    const matchResult = findByKey(source, lookup.match, value);
 
     if (!matchResult || isEmpty(matchResult)) {
       return runtime.lookupResults.value.delete(lookup.fieldTarget);

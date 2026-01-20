@@ -27,6 +27,7 @@ import {
   isDynamicValue,
   processDynamicValue,
 } from "@/core/lifecycle/hooks/useDispatchHandler/processDynamicValue";
+import { useLookupProcess } from "@/core/lifecycle/hooks/useLookup";
 
 export default class Schema {
   rawSchemas: RawSchemas | undefined = undefined;
@@ -127,6 +128,15 @@ export default class Schema {
             `${metadata.path}.${metadata.propertyKey}`,
             processedValue
           );
+
+          // 当 componentProps 下的属性更新时（如异步 options），触发对应字段的 lookup 计算
+          if (
+            !jumpConsume &&
+            metadata.path.includes("componentProps") &&
+            processedValue !== undefined
+          ) {
+            this.triggerLookupForSource(metadata.propertyKey, schema.field);
+          }
         },
       });
       return true;
@@ -287,5 +297,21 @@ export default class Schema {
 
     // 非 object 数据，可以直接认为是处理完成
     metadata.processedSetter?.(value, jumpConsume);
+  }
+
+  // 当 componentProps 下的属性（如 options）更新时，触发对应字段的 lookup 计算
+  triggerLookupForSource(sourceKey: string | undefined, field: string | undefined) {
+    if (!sourceKey || !field) return;
+    
+    // 遍历所有 lookup，找到匹配的进行触发
+    for (const [fieldTarget, lookup] of this.runtime.lookups.value.entries()) {
+      if (lookup.sourceKey === sourceKey && fieldTarget === field) {
+        const currentValue = get(this.runtime._model.model.value, fieldTarget);
+        if (currentValue !== undefined) {
+          useLookupProcess(fieldTarget, currentValue, this.runtime);
+        }
+        break;
+      }
+    }
   }
 }

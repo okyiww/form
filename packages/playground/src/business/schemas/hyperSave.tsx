@@ -1,14 +1,11 @@
 import {
   Cascader,
   Input,
-  InputNumber,
-  RadioGroup,
   RangePicker,
   Select,
   TreeSelect,
 } from "@arco-design/web-vue";
 import { defineFormSchema, raw } from "@okyiww/form";
-import { ref } from "vue";
 
 export default defineFormSchema([
   {
@@ -27,10 +24,16 @@ export default defineFormSchema([
     field: "gender",
     component: Select,
     componentProps: {
-      options: [
-        { label: "男", value: "male" },
-        { label: "女", value: "female" },
-      ],
+      options: () => {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve([
+              { label: "男", value: "male" },
+              { label: "女", value: "female" },
+            ]);
+          }, 1000);
+        });
+      },
       multiple: true,
     },
     lookup: raw({
@@ -122,6 +125,7 @@ export default defineFormSchema([
       source: "options",
       match: "value",
       format: (matchResult) => {
+        console.log("match",matchResult);
         return matchResult
           .map((item) => item.map((item) => item.label).join(","))
           .join("; ");
