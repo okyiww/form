@@ -17,7 +17,10 @@ import {
   Ref,
   watch,
 } from "vue";
-import { transformModelByRememberedNames } from "@/helpers/namesToRemember";
+import {
+  transformModelByRememberedNames,
+  reverseTransformModelByRememberedNames,
+} from "@/helpers/namesToRemember";
 
 export default class Runtime {
   public _schema: Schema;
@@ -125,8 +128,17 @@ export default class Runtime {
   hydrate(model: AnyObject) {
     return new Promise((resolve) => {
       this.isReady(() => {
-        Object.keys(model).forEach((key) => {
-          this._model.model.value[key] = model[key];
+        console.log("here?");
+        const transformedModel = this._options.namesToRemember
+          ? reverseTransformModelByRememberedNames(
+              model,
+              this._options.namesToRemember
+            )
+          : model;
+
+          console.log("transformedModel", transformedModel);
+        Object.keys(transformedModel).forEach((key) => {
+          this._model.model.value[key] = transformedModel[key];
         });
         resolve(this._model.model.value);
       });

@@ -10,6 +10,7 @@ import { UseFormOptions } from "@/helpers/useForm/types";
 export function useForm(options: UseFormOptions) {
   const runtime = new Runtime(options);
 
+  console.log("useform");
   return [
     runtime.render(),
     {
