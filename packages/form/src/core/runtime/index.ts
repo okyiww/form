@@ -21,6 +21,7 @@ import {
   transformModelByRememberedNames,
   reverseTransformModelByRememberedNames,
 } from "@/helpers/namesToRemember";
+import { set } from "lodash";
 
 export default class Runtime {
   public _schema: Schema;
@@ -130,18 +131,25 @@ export default class Runtime {
       this.isReady(() => {
         const transformedModel = this._options.namesToRemember
           ? reverseTransformModelByRememberedNames(
-              model,
-              this._options.namesToRemember
-            )
+            model,
+            this._options.namesToRemember
+          )
           : model;
 
-          console.log("transformedModel", transformedModel);
         Object.keys(transformedModel).forEach((key) => {
           this._model.model.value[key] = transformedModel[key];
         });
         resolve(this._model.model.value);
       });
     });
+  }
+
+  deleteField(path: string) {
+    // 删除 lookupResults 中的对应条目
+    this.lookupResults.value.delete(path);
+    // 删除 formModel 中的对应字段（支持嵌套路径如 "a.b.c"）
+    set(this._model.model.value, path, undefined);
+
   }
 
   getFormRef() {

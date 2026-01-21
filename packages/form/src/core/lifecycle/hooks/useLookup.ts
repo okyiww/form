@@ -53,6 +53,9 @@ export function useLookupProcess(path: string, value: any, runtime: Runtime) {
         matchResult: lookup.schema.lookup?.format
           ? lookup.schema.lookup?.format(value)
           : value,
+        delete: () => {
+          runtime.deleteField(lookup.fieldTarget);
+        },
       });
       return;
     }
@@ -76,6 +79,9 @@ export function useLookupProcess(path: string, value: any, runtime: Runtime) {
       matchResult: lookup.schema.lookup?.format
         ? lookup.schema.lookup?.format(matchResult)
         : matchResult,
+      delete: () => {
+        runtime.deleteField(lookup.fieldTarget);
+      },
     });
   }
 }
