@@ -8,6 +8,7 @@ import {
   isString,
   isArray,
   get,
+  set,
   find,
   compact,
   map,
@@ -53,9 +54,8 @@ export function useLookupProcess(path: string, value: any, runtime: Runtime) {
         matchResult: lookup.schema.lookup?.format
           ? lookup.schema.lookup?.format(value)
           : value,
-        delete: () => {
-          runtime.deleteField(lookup.fieldTarget);
-        },
+        // lookup === true 的情况没有 match 配置，只支持简单值比较或 predicate 函数
+        delete: createDeleteHandler(runtime, lookup.fieldTarget),
       });
       return;
     }
@@ -79,9 +79,8 @@ export function useLookupProcess(path: string, value: any, runtime: Runtime) {
       matchResult: lookup.schema.lookup?.format
         ? lookup.schema.lookup?.format(matchResult)
         : matchResult,
-      delete: () => {
-        runtime.deleteField(lookup.fieldTarget);
-      },
+      // 有 match 配置，支持对象数组的匹配删除
+      delete: createDeleteHandler(runtime, lookup.fieldTarget, lookup.match),
     });
   }
 }
@@ -170,4 +169,55 @@ function findByKey<T = unknown>(
   return format && result !== undefined
     ? format(result as T | T[] | T[][])
     : result;
+}
+
+/**
+ * 创建 delete 处理函数
+ * @param runtime Runtime 实例
+ * @param fieldTarget 字段路径
+ * @param match 匹配配置（可选，用于对象数组的匹配）
+ */
+function createDeleteHandler(
+  runtime: Runtime,
+  fieldTarget: string,
+  match?: string | MatchFn
+) {
+  return (valueToRemove?: unknown) => {
+    // 如果没传 valueToRemove，完全删除该字段
+    if (valueToRemove === undefined) {
+      runtime.deleteField(fieldTarget);
+      return;
+    }
+
+    const currentValue = get(runtime._model.model.value, fieldTarget);
+
+    // 如果当前值不是数组，完全删除
+    if (!isArray(currentValue)) {
+      runtime.deleteField(fieldTarget);
+      return;
+    }
+
+    // 从数组中移除匹配项
+    const newValue = currentValue.filter((item: unknown) => {
+      // 1. valueToRemove 是函数时，作为 predicate 使用
+      if (isFunction(valueToRemove)) {
+        return !(valueToRemove as (item: unknown) => boolean)(item);
+      }
+
+      // 2. 对象数组且有 match 配置时，使用 match 逻辑
+      if (isObject(item) && !isArray(item) && match) {
+        if (isFunction(match)) {
+          return !match(item, valueToRemove);
+        }
+        // match 是字符串路径，如 'id' 或 'user.id'
+        return get(item, match) !== valueToRemove;
+      }
+
+      // 3. 简单值比较（适用于简单数组如 ['A', 'B']）
+      return item !== valueToRemove;
+    });
+
+    // 设置过滤后的新数组
+    set(runtime._model.model.value, fieldTarget, newValue);
+  };
 }

@@ -131,9 +131,9 @@ export default class Runtime {
       this.isReady(() => {
         const transformedModel = this._options.namesToRemember
           ? reverseTransformModelByRememberedNames(
-            model,
-            this._options.namesToRemember
-          )
+              model,
+              this._options.namesToRemember
+            )
           : model;
 
         Object.keys(transformedModel).forEach((key) => {
@@ -147,9 +147,8 @@ export default class Runtime {
   deleteField(path: string) {
     // 删除 lookupResults 中的对应条目
     this.lookupResults.value.delete(path);
-    // 删除 formModel 中的对应字段（支持嵌套路径如 "a.b.c"）
+    // 删除 formModel 中的对应字段
     set(this._model.model.value, path, undefined);
-
   }
 
   getFormRef() {
