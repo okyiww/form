@@ -16,6 +16,11 @@ import {
 
 /**
  * 该函数就像是一个 pipe，在这个时候只记录处理定义和必要元信息，真正触发的时候再根据 path 去动态处理结果
+ * lookup 功能主要是用来给一些筛选组件用来快速匹配 label 的，比如 Select 或者 Cascader
+ * 支持多种配置形式（通过规范化处理，避免后续逻辑分支）：
+ * - true: 简单的值展示
+ * - function: 动态获取配置，适用于 RangePicker 等特定组件
+ * - object: 静态配置，包含 source、match、format 等
  */
 
 export function useLookup(
@@ -28,14 +33,21 @@ export function useLookup(
   if (lookup) {
     return;
   }
-  
+
+  // 规范化 lookup 配置：如果是函数，标记为需要动态执行
+  // 注意：这里不执行函数，而是在 useLookupProcess 时执行，因为可能依赖运行时状态
+  const isLookupFunction = isFunction(schema.lookup);
+  const lookupConfig = isLookupFunction ? null : schema.lookup;
+
   // 记录 sourceKey 用于后续动态获取最新的 source
-  const sourceKey = isString(schema.lookup.source) ? schema.lookup.source : null;
-  
+  const sourceKey =
+    !isLookupFunction && isString(lookupConfig?.source)
+      ? lookupConfig.source
+      : null;
+
   runtime.lookups.value.set(fieldTarget, {
-    // source 不在这里固定，而是在 useLookupProcess 时动态获取
     sourceKey,
-    match: schema.lookup.match,
+    match: lookupConfig?.match,
     fieldTarget,
     schema,
   });
@@ -45,42 +57,87 @@ export function useLookupProcess(path: string, value: any, runtime: Runtime) {
   for (const lookup of runtime.lookups.value.values()) {
     if (!(lookup.fieldTarget === path)) continue;
 
-    if (lookup.schema.lookup === true || isFunction(lookup.schema.lookup)) {
+    const rawLookup = lookup.schema.lookup;
+
+    // 第一步：规范化配置
+    // 函数有两种用法：
+    // 1. 工厂函数返回配置：() => ({ format, valid, render })
+    // 2. 函数对象（有 format/render 属性）：带属性的函数
+    let lookupConfig: any;
+    if (isFunction(rawLookup)) {
+      const fnAsObj = rawLookup as any;
+
+      // 优先检查函数对象的属性
+      if (fnAsObj.format || fnAsObj.render || fnAsObj.valid) {
+        // 函数对象模式：使用函数的属性
+        lookupConfig = {
+          format: fnAsObj.format,
+          render: fnAsObj.render,
+          valid: fnAsObj.valid,
+        };
+      } else {
+        // 工厂函数模式：调用函数获取配置对象
+        const callResult = rawLookup();
+        lookupConfig = isObject(callResult) && !isArray(callResult)
+          ? callResult
+          : true; // 如果不返回对象，退化为简单模式
+      }
+    } else {
+      lookupConfig = rawLookup;
+    }
+
+    // 第二步：确定是否需要 source 匹配
+    const needsSourceMatch = lookupConfig !== true && lookup.match;
+
+    // 第三步：获取 matchResult 和 matchKey
+    let matchResult: any;
+    let matchKey: string | MatchFn | undefined = undefined;
+
+    if (needsSourceMatch) {
+      // 需要从 source 中匹配数据
+      let source = lookupConfig?.source;
+      if (lookup.sourceKey) {
+        source = get(lookup.schema.componentProps, lookup.sourceKey);
+      }
+      // 如果 source 还没准备好（异步数据还没返回），跳过本次计算
+      if (source === undefined) {
+        return;
+      }
+
+      matchKey = lookup.match as string | MatchFn;
+      matchResult = findByKey(source, matchKey, value);
+
+      // source 匹配失败，删除结果
+      if (!matchResult || isEmpty(matchResult)) {
+        return runtime.lookupResults.value.delete(lookup.fieldTarget);
+      }
+    } else {
+      // 简单模式：直接使用 value，不需要从 source 匹配
       if (!value) {
         return runtime.lookupResults.value.delete(lookup.fieldTarget);
       }
-      runtime.lookupResults.value.set(lookup.fieldTarget, {
-        label: lookup.schema.label,
-        matchResult: lookup.schema.lookup?.format
-          ? lookup.schema.lookup?.format(value)
-          : value,
-        // lookup === true 的情况没有 match 配置，只支持简单值比较或 predicate 函数
-        delete: createDeleteHandler(runtime, lookup.fieldTarget),
-      });
-      return;
+      matchResult = value;
     }
-    // 动态获取最新的 source，而不是使用注册时的固定值
-    // 这样可以正确处理异步 options 的场景
-    let source = lookup.schema.lookup?.source;
-    if (lookup.sourceKey) {
-      source = get(lookup.schema.componentProps, lookup.sourceKey);
-    }
-    // 如果 source 还没准备好（异步数据还没返回），跳过本次计算
-    if (source === undefined) {
-      return;
-    }
-    const matchResult = findByKey(source, lookup.match, value);
 
-    if (!matchResult || isEmpty(matchResult)) {
-      return runtime.lookupResults.value.delete(lookup.fieldTarget);
+    // 第四步：统一处理 format
+    const formattedResult = lookupConfig?.format
+      ? lookupConfig.format(matchResult)
+      : matchResult;
+
+    // 第五步：统一处理 valid（如果有）
+    if (lookupConfig?.valid) {
+      const isValid = lookupConfig.valid(formattedResult);
+      if (!isValid) {
+        return runtime.lookupResults.value.delete(lookup.fieldTarget);
+      }
     }
+
+    // 第六步：设置最终结果
     runtime.lookupResults.value.set(lookup.fieldTarget, {
       label: lookup.schema.label,
-      matchResult: lookup.schema.lookup?.format
-        ? lookup.schema.lookup?.format(matchResult)
-        : matchResult,
-      // 有 match 配置，支持对象数组的匹配删除
-      delete: createDeleteHandler(runtime, lookup.fieldTarget, lookup.match),
+      matchResult: formattedResult,
+      delete: createDeleteHandler(runtime, lookup.fieldTarget, matchKey),
+      render: lookupConfig?.render,
     });
   }
 }

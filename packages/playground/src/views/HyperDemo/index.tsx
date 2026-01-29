@@ -59,6 +59,7 @@ export default defineComponent({
         <div>
           {item.label}
           {item.matchResult}
+          <Button onClick={() => item?.delete?.()}>删除</Button>
         </div>
       );
     }

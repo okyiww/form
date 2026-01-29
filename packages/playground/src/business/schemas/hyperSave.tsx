@@ -125,7 +125,7 @@ export default defineFormSchema([
       source: "options",
       match: "value",
       format: (matchResult) => {
-        console.log("match",matchResult);
+        console.log("match", matchResult);
         return matchResult
           .map((item) => item.map((item) => item.label).join(","))
           .join("; ");
@@ -179,8 +179,13 @@ export default defineFormSchema([
     label: "测试Date",
     field: "date123",
     component: RangePicker,
-    lookup: raw((matchResult) => {
-      return matchResult.join(" - ");
+    lookup: raw(() => {
+      return {
+        format: (matchResult) => {
+          console.log("matchResult", matchResult);
+          return matchResult.join(" - ");
+        },
+      };
     }),
     placeholder: ["请选择1日期", "请选择日期"],
   },
