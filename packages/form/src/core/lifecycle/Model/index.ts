@@ -31,13 +31,9 @@ export default class Model {
   );
 
   triggerLookup() {
-    // 遍历所有已注册的 lookups，从 model 中获取对应路径的值来触发计算
-    // 这样可以正确处理嵌套路径如 memberProfileExtension.phoneRegion
     for (const [fieldTarget] of this.runtime.lookups.value.entries()) {
       const value = get(this.model.value, fieldTarget);
-      if (value !== undefined) {
-        useLookupProcess(fieldTarget, value, this.runtime);
-      }
+      useLookupProcess(fieldTarget, value, this.runtime);
     }
   }
 

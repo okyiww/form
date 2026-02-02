@@ -322,7 +322,7 @@ export default class Schema {
       }
       // 监听变化，当数据从空变为有值时设置并停止监听
       const stopWatch = watch(
-        () => isRef(value) ? value.value : value,
+        () => (isRef(value) ? value.value : value),
         (newValue) => {
           metadata.processedSetter?.(newValue);
           // 数据就绪后停止监听，避免持续监听的性能开销
@@ -340,7 +340,10 @@ export default class Schema {
   }
 
   // 当 componentProps 下的属性（如 options）更新时，触发对应字段的 lookup 计算
-  triggerLookupForSource(sourceKey: string | undefined, field: string | undefined) {
+  triggerLookupForSource(
+    sourceKey: string | undefined,
+    field: string | undefined
+  ) {
     if (!sourceKey || !field) return;
     // 遍历所有 lookup，找到匹配的进行触发
     for (const [fieldTarget, lookup] of this.runtime.lookups.value.entries()) {

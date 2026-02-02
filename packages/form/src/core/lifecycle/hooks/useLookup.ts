@@ -78,9 +78,8 @@ export function useLookupProcess(path: string, value: any, runtime: Runtime) {
       } else {
         // 工厂函数模式：调用函数获取配置对象
         const callResult = rawLookup();
-        lookupConfig = isObject(callResult) && !isArray(callResult)
-          ? callResult
-          : true; // 如果不返回对象，退化为简单模式
+        lookupConfig =
+          isObject(callResult) && !isArray(callResult) ? callResult : true; // 如果不返回对象，退化为简单模式
       }
     } else {
       lookupConfig = rawLookup;
