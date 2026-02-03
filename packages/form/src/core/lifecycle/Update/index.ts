@@ -30,4 +30,8 @@ export default class Update {
       }
     }
   }
+
+  reset() {
+    this.effects.clear();
+  }
 }

@@ -22,6 +22,7 @@ import {
   reverseTransformModelByRememberedNames,
 } from "@/helpers/namesToRemember";
 import { set } from "lodash";
+import { RawSchemas } from "@/helpers/defineFormSchema/types";
 
 export default class Runtime {
   public _schema: Schema;
@@ -153,5 +154,48 @@ export default class Runtime {
 
   getFormRef() {
     return this._render.formRef;
+  }
+
+  /**
+   * 使用新的 schema 重新渲染整个表单
+   */
+  updateForm(options: UseFormOptions) {
+    this._options = options;
+    // 暂停 onChange 回调，避免清理过程中触发副作用
+    this._model.pauseOnChange = true;
+
+    // 先重置 update 追踪，避免后续操作触发旧的 effects
+    this._update.reset();
+
+    // 重置 model 状态
+    this._model.relationMap.clear();
+    this._model.allConsumed.value = false;
+    this._model.immutableModel = {};
+    Object.keys(this._model.model.value).forEach((key) => {
+      delete this._model.model.value[key];
+    });
+
+    // 重置 lookup 状态
+    this.lookups.value.clear();
+    this.lookupResults.value.clear();
+
+    // 重置 shared 状态
+    Object.keys(this.shared).forEach((key) => {
+      delete this.shared[key as keyof typeof this.shared];
+    });
+
+    // 更新 options 中的 schemas
+    this._options.schemas = options.schemas;
+
+    // 重置 schema 并用新的 schema 重新解析
+    this._schema.parsedSchemas.value = [];
+    this._schema.refs.clear();
+    this._schema.usageTracker.clear();
+    this._schema.rawSchemas = undefined;
+
+    // 恢复 onChange 回调
+    this._model.pauseOnChange = false;
+
+    this._schema.processSchemas();
   }
 }

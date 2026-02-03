@@ -42,7 +42,16 @@ export default class Schema {
 
   processSSR(schemas: RawSchemas) {
     if (this.runtime.isSsr) {
+      const visited = new WeakSet();
       deepTraverse(schemas, (data, context) => {
+        // 跳过已访问的对象，避免循环引用导致无限递归
+        if (typeof data === "object" && data !== null) {
+          if (visited.has(data)) {
+            return data;
+          }
+          visited.add(data);
+        }
+
         if (
           this.runtime.ssr.definitions?.dispatch &&
           data[this.runtime.ssr.definitions?.dispatch]
@@ -63,8 +72,10 @@ export default class Schema {
   }
 
   processSchemas() {
+    console.log("processSchemas: start, isFunction:", isFunction(this.runtime._options.schemas));
     if (isFunction(this.runtime._options.schemas)) {
       const result = this.runtime._options.schemas() as any;
+      console.log("processSchemas: isPromise:", isPromise(result));
       if (isPromise(result)) {
         result.then((res: any) => {
           this.rawSchemas = cloneDeep(res);
@@ -81,16 +92,21 @@ export default class Schema {
         }
       );
     } else {
+      console.log("processSchemas: else branch, schemas:", this.runtime._options.schemas);
       this.rawSchemas = cloneDeep(this.runtime._options.schemas);
+      console.log("processSchemas: before traverseSchemas");
       this.traverseSchemas(
         this.processSSR(cloneDeep(this.runtime._options.schemas))
       );
+      console.log("processSchemas: after traverseSchemas");
     }
   }
 
   // I hope this function can only be called once
   traverseSchemas(schemas: RawSchemas) {
+    console.log("traverseSchemas: start, schemas:", schemas);
     traverse(schemas, (_, key, parentKey) => {
+      console.log("traverseSchemas: visiting key:", key, "parentKey:", parentKey);
       const path = parentKey
         ? `${wrapperNumericLike(parentKey)}.children.${wrapperNumericLike(key)}`
         : wrapperNumericLike(key);
@@ -102,6 +118,7 @@ export default class Schema {
         schema.type = "item";
       }
 
+      console.log("traverseSchemas: before parseSchema, path:", path);
       this.parseSchema(schema, {
         path,
         setter: (processedValue, metadata, jumpConsume = false) => {
@@ -141,8 +158,10 @@ export default class Schema {
           }
         },
       });
+      console.log("traverseSchemas: after parseSchema, path:", path);
       return true;
     });
+    console.log("traverseSchemas: end");
   }
 
   /**

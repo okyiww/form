@@ -21,8 +21,12 @@ export default class Model {
   // 关系表，用于收集 field 和 defaultValue 的对应关系, key 是 path
   relationMap = new Map<string, any>();
 
+  // 暂停 onChange 回调处理的标志
+  pauseOnChange = false;
+
   model = ref<Record<string, any>>(
     onChange({}, (path, value) => {
+      if (this.pauseOnChange) return;
       this.runtime._update.trigger("model", path);
       if (!this.runtime._options.noAutoLookup) {
         useLookupProcess(path, value, this.runtime);

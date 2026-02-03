@@ -6,7 +6,7 @@ import { getRegistSchemas } from "@/business/regist";
 import axios from "axios";
 import { get } from "lodash";
 import Counter from "@/components/Counter";
-import { Button } from "@arco-design/web-vue";
+import { Button, Input } from "@arco-design/web-vue";
 
 /**
  * TODO:
@@ -17,22 +17,23 @@ import { Button } from "@arco-design/web-vue";
 export default defineComponent({
   props: {},
   setup(props) {
-    const [Form, { submit }] = useForm({
-      ssr: {
-        renderComponent(componentName: string) {
-          return import(`@arco-design/web-vue`).then((res) => {
-            return { ...res, Counter }[componentName];
-          });
+    const ssr: any = {
+      renderComponent(componentName: string) {
+        return import(`@arco-design/web-vue`).then((res) => {
+          return { ...res, Counter }[componentName];
+        });
+      },
+      actions: {
+        GET: ({ target, path, params }) => {
+          return axios.get(target, { params });
         },
-        actions: {
-          GET: ({ target, path, params }) => {
-            return axios.get(target, { params });
-          },
-          POST: ({ target, path, data }) => {
-            return axios.post(target, data);
-          },
+        POST: ({ target, path, data }) => {
+          return axios.post(target, data);
         },
       },
+    };
+    const [Form, { submit, updateForm }] = useForm({
+      ssr,
       schemas: () => getRegistSchemas().then((res) => res.data),
     });
 
@@ -41,6 +42,22 @@ export default defineComponent({
         console.log(res);
       });
     }
+
+    setTimeout(() => {
+      console.log("before updateSchemas");
+      updateForm({
+        ssr,
+        schemas: [
+          {
+            component: "Input",
+            label: "姓名",
+            field: "name",
+            required: true,
+          },
+        ],
+      });
+      console.log("after updateSchemas");
+    }, 2000);
 
     return () => (
       <PageContent title="BPM 示例">

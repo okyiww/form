@@ -23,6 +23,7 @@ export function useForm(options: UseFormOptions) {
       namesToRemember: runtime._options.namesToRemember,
       getLookupResults: runtime.getLookupResults.bind(runtime),
       triggerLookup: runtime._model.triggerLookup.bind(runtime._model),
+      updateForm: runtime.updateForm.bind(runtime),
     },
   ];
 }
