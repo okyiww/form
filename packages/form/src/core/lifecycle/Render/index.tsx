@@ -177,7 +177,10 @@ export default class Render {
     Layout?: any
   ) {
     return (
-      <Layout style={useLayoutStyle(schema, this.runtime._options.layoutGap)}>
+      <Layout
+        style={useLayoutStyle(schema, this.runtime._options.layoutGap)}
+        schema={schema}
+      >
         {{
           default: () => {
             return schema.children.map((childSchema: any) => {

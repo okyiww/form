@@ -1,6 +1,6 @@
 {
   "name": "@okyiww/form",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "type": "module",
