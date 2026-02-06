@@ -27,8 +27,19 @@ export async function processDispatch(
   runtime: Runtime,
   runtimeInfo?: AnyObject
 ): Promise<any> {
+  if (isArray(data)) {
+    return Promise.all(
+      data.map((item: AnyObject) =>
+        processDispatch(item, utils, runtime, runtimeInfo)
+      )
+    );
+  }
+
   if (!runtime.ssr.definitions?.dispatch) return;
   const dispatch = data[runtime.ssr.definitions?.dispatch];
+  if (!dispatch) {
+    return data;
+  }
 
   if (isRequestDispatch(dispatch)) {
     return await processRequests(dispatch, data, utils, runtime, runtimeInfo)
@@ -43,7 +54,7 @@ export async function processDispatch(
             processDispatch(data.then, utils, runtime, {
               [requestResSymbol]: {
                 parentRes: runtimeInfo?.[requestResSymbol],
-                ...requestRes,
+                data: requestRes,
               },
             });
           }
@@ -154,6 +165,7 @@ export async function processDispatch(
       }
       return setResult;
     }
+
     const setResult = set(
       runtime.shared,
       data.field,
@@ -185,12 +197,6 @@ export async function processDispatch(
       );
     }
     return;
-  }
-
-  if (isArray(data)) {
-    return data.map((item: AnyObject) =>
-      processDispatch(item, utils, runtime, runtimeInfo)
-    );
   }
 
   if (runtime.ssr.actions[dispatch]) {

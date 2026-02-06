@@ -167,7 +167,10 @@ export default defineComponent({
       const handleMouseMove = (e: MouseEvent) => {
         if (!isDragging) return;
         const delta = startX - e.clientX;
-        rightPanelWidth.value = Math.max(360, Math.min(900, startWidth + delta));
+        rightPanelWidth.value = Math.max(
+          360,
+          Math.min(900, startWidth + delta)
+        );
       };
 
       const handleMouseUp = () => {
@@ -231,7 +234,9 @@ export default defineComponent({
                   {/* AI 聊天 */}
                   <div
                     class={styles.tabPane}
-                    style={{ display: activeTab.value === "ai" ? "flex" : "none" }}
+                    style={{
+                      display: activeTab.value === "ai" ? "flex" : "none",
+                    }}
                   >
                     <AIChatPanel onApplySchema={handleAIApplySchema} />
                   </div>
