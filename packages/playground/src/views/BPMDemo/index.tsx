@@ -31,6 +31,7 @@ export default defineComponent({
     let editor: Monaco.editor.IStandaloneCodeEditor | null = null;
     let monacoModule: typeof Monaco | null = null;
     let isDragging = false;
+    let currentSchemas: any[] = defaultSchemas;
 
     const ssr: any = {
       renderComponent(componentName: string) {
@@ -65,7 +66,7 @@ export default defineComponent({
 
       if (!editorRef.value) return; // 加载期间 tab 可能已切走
 
-      const initialValue = JSON.stringify(defaultSchemas, null, 2);
+      const initialValue = JSON.stringify(currentSchemas, null, 2);
       editor = monacoModule.editor.create(editorRef.value, {
         value: initialValue,
         language: "json",
@@ -144,6 +145,7 @@ export default defineComponent({
     }
 
     function handleAIApplySchema(schema: any[]) {
+      currentSchemas = schema;
       const json = JSON.stringify(schema, null, 2);
       if (editor) {
         editor.setValue(json);
