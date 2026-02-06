@@ -3,15 +3,18 @@ import {
   ref,
   nextTick,
   onBeforeUnmount,
+  onMounted,
   watch,
+  computed,
   type PropType,
 } from "vue";
-import { Button, Input } from "@arco-design/web-vue";
+import { Button } from "@arco-design/web-vue";
 import { Marked } from "marked";
 import hljs from "highlight.js";
 import "highlight.js/styles/github.css";
 import { streamChat, type ChatMessage } from "@/services/aiChat";
 import { FORM_SCHEMA_SYSTEM_PROMPT } from "@/services/schemaPrompt";
+import { useChatStore } from "@/store/chat";
 import styles from "./ai-chat.module.scss";
 
 interface UIMessage {
@@ -44,17 +47,52 @@ export default defineComponent({
     },
   },
   setup(props) {
+    const chatStore = useChatStore();
+
     const messages = ref<UIMessage[]>([]);
     const inputText = ref("");
     const isStreaming = ref(false);
     const messagesEndRef = ref<HTMLDivElement>();
     const messagesContainerRef = ref<HTMLDivElement>();
-    const chatHistory = ref<ChatMessage[]>([]);
+    const textareaRef = ref<HTMLTextAreaElement>();
     let abortController: AbortController | null = null;
 
-    // 自动滚动控制：只在用户处于底部时跟随新内容
     let autoScroll = true;
     let programmaticScroll = false;
+
+    // Build UIMessage list from store's current conversation
+    function syncMessagesFromStore() {
+      const conv = chatStore.currentConversation();
+      if (!conv) {
+        messages.value = [];
+        return;
+      }
+      messages.value = conv.messages
+        .filter((m) => m.role !== "system")
+        .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
+    }
+
+    // Watch conversation switch
+    watch(
+      () => chatStore.currentId,
+      () => {
+        // abort ongoing stream when switching
+        abortController?.abort();
+        isStreaming.value = false;
+        syncMessagesFromStore();
+        nextTick(() => scrollToBottom(true));
+      }
+    );
+
+    onMounted(async () => {
+      await chatStore.load();
+      if (chatStore.conversations.length === 0) {
+        await chatStore.createConversation();
+      } else {
+        chatStore.currentId = chatStore.conversations[0].id;
+      }
+      syncMessagesFromStore();
+    });
 
     function isNearBottom(): boolean {
       const el = messagesContainerRef.value;
@@ -63,9 +101,7 @@ export default defineComponent({
     }
 
     function handleScroll() {
-      // 忽略程序触发的滚动事件
       if (programmaticScroll) return;
-      // 用户手动滚动：根据位置决定是否恢复自动滚动
       autoScroll = isNearBottom();
     }
 
@@ -76,7 +112,6 @@ export default defineComponent({
         if (!el) return;
         programmaticScroll = true;
         el.scrollTop = el.scrollHeight;
-        // 等本轮滚动事件冒泡完再解除标记
         requestAnimationFrame(() => {
           programmaticScroll = false;
         });
@@ -94,7 +129,6 @@ export default defineComponent({
           // continue
         }
       }
-      // fallback: try parsing the whole thing
       try {
         const parsed = JSON.parse(text);
         if (Array.isArray(parsed)) return parsed;
@@ -108,24 +142,36 @@ export default defineComponent({
       const schema = extractJsonFromMarkdown(content);
       if (schema) {
         props.onApplySchema(schema);
+        chatStore.setAppliedSchema(schema);
       }
     }
 
-    function handleSend() {
+    async function handleSend() {
       const text = inputText.value.trim();
       if (!text || isStreaming.value) return;
 
-      // 发送新消息时恢复自动滚动，用户期望看到新回复
+      // Ensure we have a current conversation
+      if (!chatStore.currentId) {
+        await chatStore.createConversation();
+      }
+
       autoScroll = true;
 
       messages.value.push({ role: "user", content: text });
       inputText.value = "";
+      // reset textarea height
+      if (textareaRef.value) {
+        textareaRef.value.style.height = "auto";
+      }
 
-      chatHistory.value.push({ role: "user", content: text });
+      await chatStore.pushMessage({ role: "user", content: text });
+
+      const conv = chatStore.currentConversation();
+      if (!conv) return;
 
       const allMessages: ChatMessage[] = [
         { role: "system", content: FORM_SCHEMA_SYSTEM_PROMPT },
-        ...chatHistory.value,
+        ...conv.messages,
       ];
 
       messages.value.push({ role: "assistant", content: "" });
@@ -143,9 +189,9 @@ export default defineComponent({
           };
           scrollToBottom();
         },
-        () => {
+        async () => {
           isStreaming.value = false;
-          chatHistory.value.push({ role: "assistant", content: fullContent });
+          await chatStore.pushMessage({ role: "assistant", content: fullContent });
           scrollToBottom();
         },
         (err) => {
@@ -165,11 +211,23 @@ export default defineComponent({
       isStreaming.value = false;
     }
 
+    function autoResizeTextarea() {
+      const el = textareaRef.value;
+      if (!el) return;
+      el.style.height = "auto";
+      el.style.height = Math.min(el.scrollHeight, 150) + "px";
+    }
+
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
         handleSend();
       }
+    }
+
+    function handleInput(e: Event) {
+      inputText.value = (e.target as HTMLTextAreaElement).value;
+      autoResizeTextarea();
     }
 
     function handleCopyClick(e: MouseEvent) {
@@ -184,9 +242,72 @@ export default defineComponent({
       }
     }
 
+    async function handleNewConversation() {
+      abortController?.abort();
+      isStreaming.value = false;
+      await chatStore.createConversation();
+    }
+
+    function handleReapplySchema(conv: { appliedSchema: any[] | null }) {
+      if (conv.appliedSchema) {
+        props.onApplySchema(conv.appliedSchema);
+      }
+    }
+
     onBeforeUnmount(() => {
       abortController?.abort();
     });
+
+    function renderConversationList() {
+      return (
+        <div class={styles.convSidebar}>
+          <div class={styles.convHeader}>
+            <span class={styles.convTitle}>对话记录</span>
+            <button class={styles.convNewBtn} onClick={handleNewConversation} title="新对话">
+              +
+            </button>
+          </div>
+          <div class={styles.convList}>
+            {chatStore.conversations.map((conv) => (
+              <div
+                key={conv.id}
+                class={[
+                  styles.convItem,
+                  conv.id === chatStore.currentId && styles.convItemActive,
+                ]}
+                onClick={() => chatStore.switchConversation(conv.id)}
+              >
+                <div class={styles.convItemTitle}>{conv.title}</div>
+                <div class={styles.convItemActions}>
+                  {conv.appliedSchema && (
+                    <button
+                      class={styles.convReapplyBtn}
+                      title="重新应用表单"
+                      onClick={(e: MouseEvent) => {
+                        e.stopPropagation();
+                        handleReapplySchema(conv);
+                      }}
+                    >
+                      ↻
+                    </button>
+                  )}
+                  <button
+                    class={styles.convDeleteBtn}
+                    title="删除对话"
+                    onClick={(e: MouseEvent) => {
+                      e.stopPropagation();
+                      chatStore.removeConversation(conv.id);
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
 
     function renderMessage(msg: UIMessage, idx: number) {
       const isUser = msg.role === "user";
@@ -229,72 +350,80 @@ export default defineComponent({
 
     return () => (
       <div class={styles.chatPanel}>
-        <div class={styles.chatHeader}>
-          <span class={styles.chatTitle}>AI 表单助手</span>
-          <span class={styles.chatHint}>
-            描述你需要的表单，AI 会生成对应 Schema
-          </span>
-        </div>
+        {renderConversationList()}
+        <div class={styles.chatMain}>
+          <div
+            ref={messagesContainerRef}
+            class={styles.chatMessages}
+            onScroll={handleScroll}
+          >
+            {messages.value.length === 0 && (
+              <div class={styles.emptyState}>
+                <div class={styles.emptyIcon}>AI</div>
+                <div class={styles.emptyText}>描述你需要的表单，例如：</div>
+                <div class={styles.suggestions}>
+                  {["请假审批单", "出门申请单", "报销审批单", "加班申请单"].map(
+                    (s) => (
+                      <button
+                        key={s}
+                        class={styles.suggestionBtn}
+                        onClick={() => {
+                          inputText.value = `我需要一个${s}`;
+                          handleSend();
+                        }}
+                      >
+                        {s}
+                      </button>
+                    )
+                  )}
+                </div>
+              </div>
+            )}
+            {messages.value.map((msg, idx) => renderMessage(msg, idx))}
+            {isStreaming.value && (
+              <div class={styles.streamingHint}>
+                <span class={styles.dot} />
+                AI 正在思考...
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
 
-        <div
-          ref={messagesContainerRef}
-          class={styles.chatMessages}
-          onScroll={handleScroll}
-        >
-          {messages.value.length === 0 && (
-            <div class={styles.emptyState}>
-              <div class={styles.emptyIcon}>AI</div>
-              <div class={styles.emptyText}>描述你需要的表单，例如：</div>
-              <div class={styles.suggestions}>
-                {["请假审批单", "出门申请单", "报销审批单", "加班申请单"].map(
-                  (s) => (
-                    <button
-                      key={s}
-                      class={styles.suggestionBtn}
-                      onClick={() => {
-                        inputText.value = `我需要一个${s}`;
-                        handleSend();
-                      }}
-                    >
-                      {s}
-                    </button>
-                  )
+          <div class={styles.chatInputWrap}>
+            <div class={styles.chatInputBox}>
+              <textarea
+                ref={textareaRef}
+                class={styles.chatTextarea}
+                value={inputText.value}
+                onInput={handleInput}
+                onKeydown={handleKeyDown}
+                placeholder="描述你需要的表单，Enter 发送..."
+                disabled={isStreaming.value}
+                rows={1}
+              />
+              <div class={styles.chatInputFooter}>
+                <span class={styles.chatInputHint}>Shift+Enter 换行</span>
+                {isStreaming.value ? (
+                  <button class={styles.stopBtn} onClick={handleStop} title="停止">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                      <rect x="3" y="3" width="10" height="10" rx="2" />
+                    </svg>
+                  </button>
+                ) : (
+                  <button
+                    class={[styles.sendBtn, !inputText.value.trim() && styles.sendBtnDisabled]}
+                    onClick={handleSend}
+                    disabled={!inputText.value.trim()}
+                    title="发送"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M8 12V4M8 4L4 8M8 4L12 8" />
+                    </svg>
+                  </button>
                 )}
               </div>
             </div>
-          )}
-          {messages.value.map((msg, idx) => renderMessage(msg, idx))}
-          {isStreaming.value && (
-            <div class={styles.streamingHint}>
-              <span class={styles.dot} />
-              AI 正在思考...
-            </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-
-        <div class={styles.chatInput}>
-          <Input
-            modelValue={inputText.value}
-            onUpdate:modelValue={(v: string) => (inputText.value = v)}
-            placeholder="描述你需要的表单..."
-            onKeydown={handleKeyDown}
-            disabled={isStreaming.value}
-          />
-          {isStreaming.value ? (
-            <Button size="small" onClick={handleStop}>
-              停止
-            </Button>
-          ) : (
-            <Button
-              type="primary"
-              size="small"
-              onClick={handleSend}
-              disabled={!inputText.value.trim()}
-            >
-              发送
-            </Button>
-          )}
+          </div>
         </div>
       </div>
     );
