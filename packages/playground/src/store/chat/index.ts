@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
-import { ref } from "vue";
+import { ref, toRaw } from "vue";
+import cloneDeep from "lodash/cloneDeep";
 import {
   getAllConversations,
   saveConversation,
@@ -11,6 +12,11 @@ import type { ChatMessage } from "@/services/aiChat";
 
 function genId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+
+/** Strip Vue reactive proxies so IndexedDB can clone the object */
+function toPlain(conv: Conversation): Conversation {
+  return cloneDeep(toRaw(conv));
 }
 
 export const useChatStore = defineStore("chat", () => {
@@ -36,7 +42,7 @@ export const useChatStore = defineStore("chat", () => {
     };
     conversations.value.unshift(conv);
     currentId.value = conv.id;
-    await saveConversation(conv);
+    await saveConversation(toPlain(conv));
     return conv;
   }
 
@@ -53,7 +59,7 @@ export const useChatStore = defineStore("chat", () => {
     if (msg.role === "user" && conv.title === "新对话") {
       conv.title = msg.content.slice(0, 20) + (msg.content.length > 20 ? "..." : "");
     }
-    await saveConversation({ ...conv });
+    await saveConversation(toPlain(conv));
   }
 
   async function setAppliedSchema(schema: any[]) {
@@ -61,7 +67,7 @@ export const useChatStore = defineStore("chat", () => {
     if (!conv) return;
     conv.appliedSchema = schema;
     conv.updatedAt = Date.now();
-    await saveConversation({ ...conv });
+    await saveConversation(toPlain(conv));
   }
 
   async function removeConversation(id: string) {
