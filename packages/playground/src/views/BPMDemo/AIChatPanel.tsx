@@ -24,7 +24,13 @@ const marked = new Marked({
     code({ text, lang }) {
       const language = lang && hljs.getLanguage(lang) ? lang : "json";
       const highlighted = hljs.highlight(text, { language }).value;
-      return `<pre class="${styles.codeBlock}"><div class="${styles.codeHeader}"><span>${language}</span><button class="${styles.copyBtn}" data-code="${encodeURIComponent(text)}">复制</button></div><code class="hljs language-${language}">${highlighted}</code></pre>`;
+      return `<pre class="${styles.codeBlock}"><div class="${
+        styles.codeHeader
+      }"><span>${language}</span><button class="${
+        styles.copyBtn
+      }" data-code="${encodeURIComponent(
+        text
+      )}">复制</button></div><code class="hljs language-${language}">${highlighted}</code></pre>`;
     },
   },
 });
@@ -46,25 +52,34 @@ export default defineComponent({
     const chatHistory = ref<ChatMessage[]>([]);
     let abortController: AbortController | null = null;
 
-    // 用户是否手动向上滚动了（脱离底部）
-    let userScrolledUp = false;
+    // 自动滚动控制：只在用户处于底部时跟随新内容
+    let autoScroll = true;
+    let programmaticScroll = false;
 
     function isNearBottom(): boolean {
       const el = messagesContainerRef.value;
       if (!el) return true;
-      // 距底部 60px 以内视为"在底部"
-      return el.scrollHeight - el.scrollTop - el.clientHeight < 60;
+      return el.scrollHeight - el.scrollTop - el.clientHeight < 80;
     }
 
     function handleScroll() {
-      if (!isStreaming.value) return;
-      userScrolledUp = !isNearBottom();
+      // 忽略程序触发的滚动事件
+      if (programmaticScroll) return;
+      // 用户手动滚动：根据位置决定是否恢复自动滚动
+      autoScroll = isNearBottom();
     }
 
     function scrollToBottom(force = false) {
-      if (!force && userScrolledUp) return;
+      if (!force && !autoScroll) return;
       nextTick(() => {
-        messagesEndRef.value?.scrollIntoView({ behavior: "smooth" });
+        const el = messagesContainerRef.value;
+        if (!el) return;
+        programmaticScroll = true;
+        el.scrollTop = el.scrollHeight;
+        // 等本轮滚动事件冒泡完再解除标记
+        requestAnimationFrame(() => {
+          programmaticScroll = false;
+        });
       });
     }
 
@@ -100,8 +115,8 @@ export default defineComponent({
       const text = inputText.value.trim();
       if (!text || isStreaming.value) return;
 
-      // 发送新消息时重置滚动锁定，用户期望看到新回复
-      userScrolledUp = false;
+      // 发送新消息时恢复自动滚动，用户期望看到新回复
+      autoScroll = true;
 
       messages.value.push({ role: "user", content: text });
       inputText.value = "";
@@ -130,7 +145,6 @@ export default defineComponent({
         },
         () => {
           isStreaming.value = false;
-          userScrolledUp = false;
           chatHistory.value.push({ role: "assistant", content: fullContent });
           scrollToBottom();
         },
@@ -182,11 +196,12 @@ export default defineComponent({
       return (
         <div
           key={idx}
-          class={[styles.message, isUser ? styles.userMessage : styles.aiMessage]}
+          class={[
+            styles.message,
+            isUser ? styles.userMessage : styles.aiMessage,
+          ]}
         >
-          <div class={styles.messageAvatar}>
-            {isUser ? "你" : "AI"}
-          </div>
+          <div class={styles.messageAvatar}>{isUser ? "你" : "AI"}</div>
           <div class={styles.messageBody}>
             {isUser ? (
               <div class={styles.messageText}>{msg.content}</div>
@@ -216,16 +231,20 @@ export default defineComponent({
       <div class={styles.chatPanel}>
         <div class={styles.chatHeader}>
           <span class={styles.chatTitle}>AI 表单助手</span>
-          <span class={styles.chatHint}>描述你需要的表单，AI 会生成对应 Schema</span>
+          <span class={styles.chatHint}>
+            描述你需要的表单，AI 会生成对应 Schema
+          </span>
         </div>
 
-        <div ref={messagesContainerRef} class={styles.chatMessages} onScroll={handleScroll}>
+        <div
+          ref={messagesContainerRef}
+          class={styles.chatMessages}
+          onScroll={handleScroll}
+        >
           {messages.value.length === 0 && (
             <div class={styles.emptyState}>
               <div class={styles.emptyIcon}>AI</div>
-              <div class={styles.emptyText}>
-                描述你需要的表单，例如：
-              </div>
+              <div class={styles.emptyText}>描述你需要的表单，例如：</div>
               <div class={styles.suggestions}>
                 {["请假审批单", "出门申请单", "报销审批单", "加班申请单"].map(
                   (s) => (

@@ -192,11 +192,25 @@
   code {
     display: block;
     padding: 14px 16px;
-    overflow-x: auto;
+    overflow: auto;
     font-size: 12px;
     line-height: 1.6;
     background: transparent;
-    max-height: 320px;
+    max-height: 400px;
+
+    &::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: #c0c4cc;
+      border-radius: 2px;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+      background: #909399;
+    }
   }
 }
 
