@@ -166,5 +166,5 @@ Op = "eq"|"ne"|"gt"|"gte"|"lt"|"lte"|"in"|"not_in"|"between"|"not_between"|"like
 4. "选了 A 加载 B" → onChange 中用模式A（SET_SHARED 包裹 GET），多个动作时用 EVENT_HANDLER + pipes
 5. "当 xx 时显示 yy" → show + CONDITION
 6. 字段数覆盖业务场景（8-20），关键字段 required
-7. 用户没提接口调用时，默认生成静态 options，不要臆造 API
+7. **接口地址必须来自用户提供的信息**（聊天消息或系统背景知识），绝对禁止自行伪造接口路径（如 /api/xxx）。用户没提供接口时，默认生成静态 options
 8. 不要输出多余的键（如 id、rules 等），除非用户明确要求`;
