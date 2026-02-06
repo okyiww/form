@@ -63,14 +63,14 @@ const router = createRouter({
       },
       component: () => import("@/views/Auth/Login/index"),
     },
-    {
-      name: "Register",
-      path: "/register",
-      meta: {
-        skipAuth: true,
-      },
-      component: () => import("@/views/Auth/Register/index"),
-    },
+    // {
+    //   name: "Register",
+    //   path: "/register",
+    //   meta: {
+    //     skipAuth: true,
+    //   },
+    //   component: () => import("@/views/Auth/Register/index"),
+    // },
     ...routes,
   ],
 });

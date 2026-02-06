@@ -6,6 +6,7 @@ import axios from "axios";
 import Counter from "@/components/Counter";
 import { Button } from "@arco-design/web-vue";
 import * as monaco from "monaco-editor";
+import AIChatPanel from "./AIChatPanel";
 
 const defaultSchemas = [
   {
@@ -16,14 +17,16 @@ const defaultSchemas = [
   },
 ];
 
+type RightTab = "ai" | "editor";
+
 export default defineComponent({
   props: {},
   setup(props) {
     const editorRef = ref<HTMLDivElement>();
-    const editorPanelRef = ref<HTMLDivElement>();
-    const editorWidth = ref(480);
+    const rightPanelWidth = ref(520);
     const jsonValid = ref(true);
     const lineCount = ref(0);
+    const activeTab = ref<RightTab>("ai");
     let editor: monaco.editor.IStandaloneCodeEditor | null = null;
     let isDragging = false;
 
@@ -34,10 +37,10 @@ export default defineComponent({
         });
       },
       actions: {
-        GET: ({ target, path, params }) => {
+        GET: ({ target, path, params }: any) => {
           return axios.get(target, { params });
         },
-        POST: ({ target, path, data }) => {
+        POST: ({ target, path, data }: any) => {
           return axios.post(target, data);
         },
       },
@@ -48,41 +51,47 @@ export default defineComponent({
       schemas: defaultSchemas,
     });
 
+    function initEditor() {
+      if (!editorRef.value || editor) return;
+      const initialValue = JSON.stringify(defaultSchemas, null, 2);
+      editor = monaco.editor.create(editorRef.value, {
+        value: initialValue,
+        language: "json",
+        theme: "vs",
+        minimap: { enabled: false },
+        automaticLayout: true,
+        formatOnPaste: true,
+        formatOnType: true,
+        tabSize: 2,
+        scrollBeyondLastLine: false,
+        fontSize: 13,
+        lineHeight: 20,
+        padding: { top: 12, bottom: 12 },
+        renderLineHighlight: "all",
+        bracketPairColorization: { enabled: true },
+        smoothScrolling: true,
+        cursorBlinking: "smooth",
+        cursorSmoothCaretAnimation: "on",
+      });
+
+      lineCount.value = editor.getModel()?.getLineCount() || 0;
+
+      editor.onDidChangeModelContent(() => {
+        const content = editor?.getValue() || "";
+        lineCount.value = editor?.getModel()?.getLineCount() || 0;
+        try {
+          JSON.parse(content);
+          jsonValid.value = true;
+        } catch {
+          jsonValid.value = false;
+        }
+      });
+    }
+
     onMounted(() => {
-      if (editorRef.value) {
-        const initialValue = JSON.stringify(defaultSchemas, null, 2);
-        editor = monaco.editor.create(editorRef.value, {
-          value: initialValue,
-          language: "json",
-          theme: "vs",
-          minimap: { enabled: false },
-          automaticLayout: true,
-          formatOnPaste: true,
-          formatOnType: true,
-          tabSize: 2,
-          scrollBeyondLastLine: false,
-          fontSize: 13,
-          lineHeight: 20,
-          padding: { top: 12, bottom: 12 },
-          renderLineHighlight: "all",
-          bracketPairColorization: { enabled: true },
-          smoothScrolling: true,
-          cursorBlinking: "smooth",
-          cursorSmoothCaretAnimation: "on",
-        });
-
-        lineCount.value = editor.getModel()?.getLineCount() || 0;
-
-        editor.onDidChangeModelContent(() => {
-          const content = editor?.getValue() || "";
-          lineCount.value = editor?.getModel()?.getLineCount() || 0;
-          try {
-            JSON.parse(content);
-            jsonValid.value = true;
-          } catch {
-            jsonValid.value = false;
-          }
-        });
+      // 延迟初始化编辑器（可能初始 tab 不在 editor）
+      if (activeTab.value === "editor") {
+        initEditor();
       }
     });
 
@@ -100,10 +109,7 @@ export default defineComponent({
       if (!editor || !jsonValid.value) return;
       try {
         const schemas = JSON.parse(editor.getValue());
-        updateForm({
-          ssr,
-          schemas,
-        });
+        updateForm({ ssr, schemas });
       } catch (e) {
         console.error("Invalid JSON:", e);
       }
@@ -125,15 +131,31 @@ export default defineComponent({
       }
     }
 
+    function handleAIApplySchema(schema: any[]) {
+      const json = JSON.stringify(schema, null, 2);
+      if (editor) {
+        editor.setValue(json);
+      }
+      updateForm({ ssr, schemas: schema });
+    }
+
+    function handleSwitchTab(tab: RightTab) {
+      activeTab.value = tab;
+      if (tab === "editor") {
+        // 需要在 DOM 更新后初始化编辑器
+        setTimeout(() => initEditor(), 50);
+      }
+    }
+
     function handleResizeStart(e: MouseEvent) {
       isDragging = true;
       const startX = e.clientX;
-      const startWidth = editorWidth.value;
+      const startWidth = rightPanelWidth.value;
 
       const handleMouseMove = (e: MouseEvent) => {
         if (!isDragging) return;
         const delta = startX - e.clientX;
-        editorWidth.value = Math.max(200, Math.min(800, startWidth + delta));
+        rightPanelWidth.value = Math.max(360, Math.min(900, startWidth + delta));
       };
 
       const handleMouseUp = () => {
@@ -151,44 +173,98 @@ export default defineComponent({
         {{
           default: () => (
             <div class={styles.container}>
+              {/* 左侧：表单预览（主角） */}
               <div class={styles.formPanel}>
                 <div class={styles.formCard}>
                   <Form />
                 </div>
               </div>
+
+              {/* 拖拽条 */}
               <div class={styles.resizer} onMousedown={handleResizeStart} />
+
+              {/* 右侧：Tab 切换面板 */}
               <div
-                ref={editorPanelRef}
-                class={styles.editorPanel}
-                style={{ width: `${editorWidth.value}px` }}
+                class={styles.rightPanel}
+                style={{ width: `${rightPanelWidth.value}px` }}
               >
-                <div class={styles.editorHeader}>
-                  <div class={styles.title}>
-                    <span class={styles.titleIcon}>{`{ }`}</span>
-                    <span>Schema 编辑器</span>
-                  </div>
-                  <div class={styles.editorActions}>
-                    <Button size="small" onClick={handleFixJson}>
-                      转 JSON
-                    </Button>
-                    <Button size="small" onClick={handleFormat}>
-                      格式化
-                    </Button>
-                    <Button type="primary" size="small" onClick={handleApplySchema}>
-                      应用
-                    </Button>
+                {/* Tab 头 */}
+                <div class={styles.tabBar}>
+                  <div class={styles.tabs}>
+                    <button
+                      class={[
+                        styles.tab,
+                        activeTab.value === "ai" && styles.tabActive,
+                      ]}
+                      onClick={() => handleSwitchTab("ai")}
+                    >
+                      <span class={styles.tabIcon}>✦</span>
+                      AI 助手
+                    </button>
+                    <button
+                      class={[
+                        styles.tab,
+                        activeTab.value === "editor" && styles.tabActive,
+                      ]}
+                      onClick={() => handleSwitchTab("editor")}
+                    >
+                      <span class={styles.tabIconCode}>{`{}`}</span>
+                      Schema
+                    </button>
                   </div>
                 </div>
-                <div ref={editorRef} class={styles.editor} />
-                <div class={styles.statusBar}>
-                  <div class={styles.statusItem}>
-                    <span
-                      class={[styles.statusDot, !jsonValid.value && styles.error]}
-                    />
-                    <span>{jsonValid.value ? "JSON 有效" : "JSON 无效"}</span>
+
+                {/* Tab 内容 */}
+                <div class={styles.tabContent}>
+                  {/* AI 聊天 */}
+                  <div
+                    class={styles.tabPane}
+                    style={{ display: activeTab.value === "ai" ? "flex" : "none" }}
+                  >
+                    <AIChatPanel onApplySchema={handleAIApplySchema} />
                   </div>
-                  <div class={styles.statusItem}>
-                    <span>{lineCount.value} 行</span>
+
+                  {/* Schema 编辑器 */}
+                  <div
+                    class={styles.tabPane}
+                    style={{
+                      display: activeTab.value === "editor" ? "flex" : "none",
+                    }}
+                  >
+                    <div class={styles.editorToolbar}>
+                      <div class={styles.editorActions}>
+                        <Button size="mini" onClick={handleFixJson}>
+                          转 JSON
+                        </Button>
+                        <Button size="mini" onClick={handleFormat}>
+                          格式化
+                        </Button>
+                        <Button
+                          type="primary"
+                          size="mini"
+                          onClick={handleApplySchema}
+                        >
+                          应用到表单
+                        </Button>
+                      </div>
+                    </div>
+                    <div ref={editorRef} class={styles.editor} />
+                    <div class={styles.statusBar}>
+                      <div class={styles.statusItem}>
+                        <span
+                          class={[
+                            styles.statusDot,
+                            !jsonValid.value && styles.error,
+                          ]}
+                        />
+                        <span>
+                          {jsonValid.value ? "JSON 有效" : "JSON 无效"}
+                        </span>
+                      </div>
+                      <div class={styles.statusItem}>
+                        <span>{lineCount.value} 行</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

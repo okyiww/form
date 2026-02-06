@@ -65,6 +65,8 @@ export default defineComponent({
     }
 
     function handleRegister() {
+      Message.info("暂未开放注册");
+      return;
       router.push({
         name: "Register",
       });

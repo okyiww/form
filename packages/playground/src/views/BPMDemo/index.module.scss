@@ -1,13 +1,14 @@
 .container {
   display: flex;
-  gap: 0;
   height: 100%;
+  overflow: hidden;
 }
 
+/* =================== 左侧：表单预览 =================== */
 .formPanel {
   flex: 1;
   min-width: 0;
-  padding: 20px 24px;
+  padding: 24px 32px;
   overflow: auto;
   background: linear-gradient(180deg, #fafbfc 0%, #f5f7fa 100%);
 
@@ -26,108 +27,180 @@
 }
 
 .formCard {
+  max-width: 680px;
+  margin: 0 auto;
   background: #fff;
-  border-radius: 8px;
-  padding: 24px 28px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border-radius: 12px;
+  padding: 32px 36px;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 6px 16px rgba(0, 0, 0, 0.04);
 }
 
+/* =================== 拖拽条 =================== */
 .resizer {
-  width: 8px;
+  width: 6px;
   cursor: col-resize;
-  background: #f0f2f5;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s ease;
+  flex-shrink: 0;
+  position: relative;
+  transition: background 0.15s;
 
   &::before {
     content: '';
-    width: 3px;
-    height: 28px;
-    background: #dcdfe6;
-    border-radius: 2px;
-    transition: all 0.2s ease;
+    width: 2px;
+    height: 32px;
+    background: #e0e3e8;
+    border-radius: 1px;
+    transition: all 0.15s;
   }
 
   &:hover {
-    background: #e8f3ff;
+    background: rgba(64, 158, 255, 0.06);
 
     &::before {
       background: #409eff;
-      height: 36px;
+      height: 40px;
+      width: 3px;
     }
-  }
-
-  &:active {
-    background: #d9ecff;
   }
 }
 
-.editorPanel {
+/* =================== 右侧面板 =================== */
+.rightPanel {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   background: #fff;
+  border-left: 1px solid #ebeef5;
+  overflow: hidden;
 }
 
-.editorHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 16px;
+/* Tab 栏 */
+.tabBar {
+  padding: 0 16px;
   background: #fafbfc;
   border-bottom: 1px solid #ebeef5;
+  flex-shrink: 0;
+}
 
-  .title {
-    font-weight: 500;
-    font-size: 14px;
-    color: #303133;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+.tabs {
+  display: flex;
+  gap: 0;
+}
+
+.tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 20px;
+  border: none;
+  background: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: #909399;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 16px;
+    right: 16px;
+    height: 2px;
+    background: transparent;
+    border-radius: 1px 1px 0 0;
+    transition: background 0.2s;
   }
 
-  .titleIcon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    background: #ecf5ff;
-    border-radius: 4px;
-    font-family: 'Monaco', 'Menlo', monospace;
-    font-size: 11px;
-    font-weight: 600;
+  &:hover {
+    color: #606266;
+  }
+
+  &.tabActive {
     color: #409eff;
+
+    &::after {
+      background: #409eff;
+    }
   }
+}
+
+.tabIcon {
+  font-size: 14px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.tabIconCode {
+  font-size: 12px;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-weight: 600;
+  opacity: 0.7;
+
+  .tabActive & {
+    opacity: 1;
+  }
+}
+
+/* Tab 内容区 */
+.tabContent {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.tabPane {
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* =================== Schema 编辑器 =================== */
+.editorToolbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 8px 12px;
+  background: #fafbfc;
+  border-bottom: 1px solid #f0f2f5;
+  flex-shrink: 0;
 }
 
 .editorActions {
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
 .editor {
   flex: 1;
-  min-height: 400px;
+  min-height: 0;
 }
 
 .statusBar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 16px;
+  padding: 6px 12px;
   background: #fafbfc;
-  border-top: 1px solid #ebeef5;
-  font-size: 12px;
+  border-top: 1px solid #f0f2f5;
+  font-size: 11px;
   color: #909399;
+  flex-shrink: 0;
 }
 
 .statusItem {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 .statusDot {
