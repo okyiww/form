@@ -5,7 +5,7 @@ import { useForm } from "@okyiww/form";
 import axios from "axios";
 import Counter from "@/components/Counter";
 import { Button } from "@arco-design/web-vue";
-import * as monaco from "monaco-editor";
+import type * as Monaco from "monaco-editor";
 import AIChatPanel from "./AIChatPanel";
 
 const defaultSchemas = [
@@ -27,7 +27,9 @@ export default defineComponent({
     const jsonValid = ref(true);
     const lineCount = ref(0);
     const activeTab = ref<RightTab>("ai");
-    let editor: monaco.editor.IStandaloneCodeEditor | null = null;
+    const editorLoading = ref(false);
+    let editor: Monaco.editor.IStandaloneCodeEditor | null = null;
+    let monacoModule: typeof Monaco | null = null;
     let isDragging = false;
 
     const ssr: any = {
@@ -51,10 +53,20 @@ export default defineComponent({
       schemas: defaultSchemas,
     });
 
-    function initEditor() {
+    async function initEditor() {
       if (!editorRef.value || editor) return;
+
+      // 懒加载 monaco-editor，只在第一次切到 Schema tab 时加载
+      if (!monacoModule) {
+        editorLoading.value = true;
+        monacoModule = await import("monaco-editor");
+        editorLoading.value = false;
+      }
+
+      if (!editorRef.value) return; // 加载期间 tab 可能已切走
+
       const initialValue = JSON.stringify(defaultSchemas, null, 2);
-      editor = monaco.editor.create(editorRef.value, {
+      editor = monacoModule.editor.create(editorRef.value, {
         value: initialValue,
         language: "json",
         theme: "vs",
@@ -142,7 +154,7 @@ export default defineComponent({
     function handleSwitchTab(tab: RightTab) {
       activeTab.value = tab;
       if (tab === "editor") {
-        // 需要在 DOM 更新后初始化编辑器
+        // DOM 更新后再初始化（异步加载 monaco）
         setTimeout(() => initEditor(), 50);
       }
     }
@@ -248,6 +260,9 @@ export default defineComponent({
                         </Button>
                       </div>
                     </div>
+                    {editorLoading.value && (
+                      <div class={styles.editorLoading}>编辑器加载中...</div>
+                    )}
                     <div ref={editorRef} class={styles.editor} />
                     <div class={styles.statusBar}>
                       <div class={styles.statusItem}>
