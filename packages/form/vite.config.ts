@@ -10,6 +10,10 @@ export default defineConfig(({ mode }) => ({
         find: "@",
         replacement: resolve(__dirname, "./src"),
       },
+      {
+        find: "lodash",
+        replacement: "lodash-es",
+      },
     ],
   },
   build: {
@@ -35,6 +39,11 @@ export default defineConfig(({ mode }) => ({
       format: {
         comments: false,
       },
+    },
+    minify: "esbuild",
+    esbuildOptions: {
+      drop: ["console", "debugger"],
+      legalComments: "none",
     },
     sourcemap: mode === "development" ? "inline" : false,
   },
