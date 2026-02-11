@@ -40,11 +40,6 @@ export default defineConfig(({ mode }) => ({
         comments: false,
       },
     },
-    minify: "esbuild",
-    esbuildOptions: {
-      drop: ["console", "debugger"],
-      legalComments: "none",
-    },
     sourcemap: mode === "development" ? "inline" : false,
   },
   plugins: [
