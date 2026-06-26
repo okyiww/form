@@ -2,10 +2,17 @@ export type Component = any;
 
 export type BuiltInAdapter = "ArcoVue" | (string & {});
 
+export type ResolvedKeys = {
+  labelKey: string;
+  valueKey: string;
+  childrenKey: string;
+};
+
 export type CustomAdapter = {
   formModelName: string;
   formModelKey: string; // 用于唯一标识某个表单域
   validate: () => Promise<void>;
+  resolveKeys?: (componentProps: any) => ResolvedKeys | null;
 };
 
 export type Template =

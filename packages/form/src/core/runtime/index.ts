@@ -21,6 +21,7 @@ import {
   transformModelByRememberedNames,
   reverseTransformModelByRememberedNames,
 } from "@/helpers/namesToRemember";
+import { collectDisplayLabels, buildDisplayLabelConfig } from "@/core/services/collectDisplayLabels";
 import { set } from "lodash";
 import { RawSchemas } from "@/helpers/defineFormSchema/types";
 
@@ -93,13 +94,25 @@ export default class Runtime {
 
   submit() {
     return this._adapter.adaptee.validate().then(() => {
-      if (this._options.namesToRemember) {
-        return transformModelByRememberedNames(
+      const model = this._options.namesToRemember
+        ? transformModelByRememberedNames(
+            this._model.model.value,
+            this._options.namesToRemember
+          )
+        : this._model.model.value;
+
+      if (this._options.includeLabel) {
+        const displayLabelConfig = buildDisplayLabelConfig(this._schema.rawSchemas ?? []);
+        const displayLabels = collectDisplayLabels(
+          this._schema.parsedSchemas.value,
           this._model.model.value,
-          this._options.namesToRemember
+          this._adapter.adaptee,
+          displayLabelConfig
         );
+        return { ...model, displayLabels };
       }
-      return this._model.model.value;
+
+      return model;
     });
   }
 
@@ -160,7 +173,7 @@ export default class Runtime {
    * 使用新的 schema 重新渲染整个表单
    */
   updateForm(options: UseFormOptions) {
-    this._options = options;
+    this._options = { ...this._options, ...options };
     // 暂停 onChange 回调，避免清理过程中触发副作用
     this._model.pauseOnChange = true;
 

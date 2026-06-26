@@ -12,7 +12,6 @@ export default defineComponent({
       return import("@/business/schemas/testan").then((res) => res.default);
     }
 
-
     const [Form, { submit, hydrate, schemas, share, isReady, getFormRef }] =
       useForm({
         schemas: getSchemas,
@@ -28,13 +27,12 @@ export default defineComponent({
     hydrate({
       "test.name": [
         {
-          "test.nameOO": "hello"
+          "test.nameOO": "hello",
         },
         {
-          "test.nameOO": "world"
+          "test.nameOO": "world",
         },
-      ]
-
+      ],
     });
 
     function handleSubmit() {

@@ -1,5 +1,5 @@
 import Runtime from "@/core/runtime";
-import { CustomAdapter } from "@/helpers/defineFormSetup/types";
+import { CustomAdapter, ResolvedKeys } from "@/helpers/defineFormSetup/types";
 
 export class NutUIAdapter implements CustomAdapter {
   constructor(public runtime: Runtime) {}
@@ -15,5 +15,9 @@ export class NutUIAdapter implements CustomAdapter {
           valid ? resolve() : reject(errors);
         });
     });
+  }
+
+  resolveKeys(_componentProps: any): ResolvedKeys | null {
+    return null;
   }
 }

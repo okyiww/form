@@ -51,6 +51,7 @@ export default defineComponent({
 
     const [Form, { submit, updateForm }] = useForm({
       ssr,
+      includeLabel: true,
       schemas: defaultSchemas,
     });
 
@@ -171,7 +172,7 @@ export default defineComponent({
         const delta = startX - e.clientX;
         rightPanelWidth.value = Math.max(
           360,
-          Math.min(900, startWidth + delta)
+          Math.min(900, startWidth + delta),
         );
       };
 

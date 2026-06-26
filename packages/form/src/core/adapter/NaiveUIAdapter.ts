@@ -1,5 +1,5 @@
 import Runtime from "@/core/runtime";
-import { CustomAdapter } from "@/helpers/defineFormSetup/types";
+import { CustomAdapter, ResolvedKeys } from "@/helpers/defineFormSetup/types";
 
 export class NaiveUIAdapter implements CustomAdapter {
   constructor(public runtime: Runtime) {}
@@ -13,5 +13,18 @@ export class NaiveUIAdapter implements CustomAdapter {
         errors ? reject(errors) : resolve();
       });
     });
+  }
+
+  // NaiveUI uses standalone labelField / valueField / keyField props
+  resolveKeys(componentProps: any): ResolvedKeys | null {
+    const labelKey = componentProps?.labelField;
+    // TreeSelect uses keyField; Select uses valueField
+    const valueKey = componentProps?.valueField ?? componentProps?.keyField;
+    if (!labelKey && !valueKey) return null;
+    return {
+      labelKey: labelKey ?? "label",
+      valueKey: valueKey ?? "value",
+      childrenKey: "children",
+    };
   }
 }

@@ -13,6 +13,7 @@ export default defineComponent({
     }
 
     const [Form, { submit, schemas, share, isReady, getFormRef }] = useForm({
+      includeLabel: true,
       schemas: getSchemas,
       formProps: {
         layout: "vertical",
@@ -55,7 +56,7 @@ export default defineComponent({
       {
         immediate: true,
         deep: true,
-      }
+      },
     );
 
     return () => (
