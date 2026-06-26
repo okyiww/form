@@ -51,7 +51,7 @@ export default defineComponent({
 
     const [Form, { submit, updateForm }] = useForm({
       ssr,
-      includeLabel: true,
+      collectDisplayValues: true,
       schemas: defaultSchemas,
     });
 

@@ -1,9 +1,12 @@
 import { ParsedSchemas } from "@/core/lifecycle/Schema/types";
 import { CustomAdapter } from "@/helpers/defineFormSetup/types";
-import { get, isArray, isNil, isObject } from "lodash";
+import { get, isArray, isNil, isObject, set } from "lodash";
 
-export type LabelMode = "leaf" | "path" | "parent";
-export type DisplayLabels = Record<string, string | string[]>;
+export type DisplayEntry = {
+  label: string;
+  value: any;
+  path?: string[];
+};
 
 const KEY_CONVENTIONS: [string, string, string][] = [
   ["value", "label", "children"],
@@ -12,45 +15,33 @@ const KEY_CONVENTIONS: [string, string, string][] = [
   ["id", "name", "children"],
 ];
 
-export function buildDisplayLabelConfig(
-  schemas: any[],
-  config: Record<string, LabelMode> = {}
-): Record<string, LabelMode> {
-  for (const schema of schemas) {
-    const type = schema.type ?? "item";
-    if (type === "group" || type === "list") {
-      buildDisplayLabelConfig(schema.children ?? [], config);
-    } else if (schema.field && schema.labelMode) {
-      config[schema.field] = schema.labelMode;
-    }
-  }
-  return config;
-}
-
-export function collectDisplayLabels(
+export function collectDisplayValues(
   parsedSchemas: ParsedSchemas,
   model: Record<string, any>,
-  adapter: CustomAdapter,
-  displayLabelConfig: Record<string, LabelMode> = {}
-): DisplayLabels {
-  const displayLabels: DisplayLabels = {};
-  walkSchemas(parsedSchemas, model, "", displayLabels, adapter, displayLabelConfig);
-  return displayLabels;
+  adapter: CustomAdapter
+): Record<string, any> {
+  const flat: Record<string, DisplayEntry | DisplayEntry[]> = {};
+  walkSchemas(parsedSchemas, model, "", flat, adapter);
+
+  const nested: Record<string, any> = {};
+  for (const [fieldPath, entry] of Object.entries(flat)) {
+    set(nested, fieldPath, entry);
+  }
+  return nested;
 }
 
 function walkSchemas(
   schemas: any[],
   model: Record<string, any>,
   basePath: string,
-  displayLabels: DisplayLabels,
-  adapter: CustomAdapter,
-  displayLabelConfig: Record<string, LabelMode>
+  flat: Record<string, DisplayEntry | DisplayEntry[]>,
+  adapter: CustomAdapter
 ) {
   for (const schema of schemas) {
     const type = schema.type ?? "item";
 
     if (type === "group") {
-      walkSchemas(schema.children ?? [], model, basePath, displayLabels, adapter, displayLabelConfig);
+      walkSchemas(schema.children ?? [], model, basePath, flat, adapter);
       continue;
     }
 
@@ -59,14 +50,7 @@ function walkSchemas(
       const listValue = get(model, listPath);
       if (isArray(listValue)) {
         listValue.forEach((_: any, index: number) => {
-          walkSchemas(
-            schema.children ?? [],
-            model,
-            `${listPath}.${index}`,
-            displayLabels,
-            adapter,
-            displayLabelConfig
-          );
+          walkSchemas(schema.children ?? [], model, `${listPath}.${index}`, flat, adapter);
         });
       }
       continue;
@@ -78,20 +62,18 @@ function walkSchemas(
     const currentValue = get(model, fieldPath);
     if (isNil(currentValue)) continue;
 
-    const mode: LabelMode = displayLabelConfig[schema.field] ?? "leaf";
-    const label = resolveLabel(schema.componentProps, currentValue, adapter, mode);
-    if (!isNil(label)) {
-      displayLabels[fieldPath] = label;
+    const entry = resolveDisplayEntry(schema.componentProps, currentValue, adapter);
+    if (entry !== null) {
+      flat[fieldPath] = entry;
     }
   }
 }
 
-function resolveLabel(
+function resolveDisplayEntry(
   componentProps: Record<string, any>,
   currentValue: any,
-  adapter: CustomAdapter,
-  mode: LabelMode
-): string | string[] | null {
+  adapter: CustomAdapter
+): DisplayEntry | DisplayEntry[] | null {
   const adapterKeys = adapter.resolveKeys?.(componentProps);
   const conventions: [string, string, string][] = adapterKeys
     ? [[adapterKeys.valueKey, adapterKeys.labelKey, adapterKeys.childrenKey], ...KEY_CONVENTIONS]
@@ -101,39 +83,35 @@ function resolveLabel(
     if (!isArray(prop) || !prop.length || !isObject(prop[0]) || isArray(prop[0])) continue;
 
     for (const [valueKey, labelKey, childrenKey] of conventions) {
-      const result = resolveByMode(prop, currentValue, valueKey, labelKey, childrenKey, mode);
-      if (!isNil(result)) return result;
+      if (isArray(currentValue)) {
+        const entries = currentValue
+          .map((v) => buildEntry(prop, v, valueKey, labelKey, childrenKey))
+          .filter((e): e is DisplayEntry => e !== null);
+        if (entries.length) return entries;
+      } else {
+        const entry = buildEntry(prop, currentValue, valueKey, labelKey, childrenKey);
+        if (entry !== null) return entry;
+      }
     }
   }
 
   return null;
 }
 
-function resolveByMode(
+function buildEntry(
   options: any[],
   value: any,
   valueKey: string,
   labelKey: string,
-  childrenKey: string,
-  mode: LabelMode
-): string | string[] | null {
-  const resolve = (v: any): string | null => {
-    const path = findAncestorPath(options, v, valueKey, labelKey, childrenKey);
-    if (!path) return null;
-    if (mode === "leaf") return path[path.length - 1] ?? null;
-    if (mode === "path") return path.join(", ");
-    return path.slice(-2).join(", ");
-  };
-
-  if (isArray(value)) {
-    const results = value.map(resolve).filter((s): s is string => !isNil(s));
-    return results.length ? results : null;
-  }
-
-  return resolve(value);
+  childrenKey: string
+): DisplayEntry | null {
+  const path = findAncestorPath(options, value, valueKey, labelKey, childrenKey);
+  if (!path?.length) return null;
+  const entry: DisplayEntry = { label: path[path.length - 1], value };
+  if (path.length > 1) entry.path = path;
+  return entry;
 }
 
-// Returns full ancestor path from root to matched node, skipping label-less intermediate nodes
 function findAncestorPath(
   options: any[],
   value: any,

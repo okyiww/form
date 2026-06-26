@@ -14,5 +14,5 @@ export type UseFormOptions = {
   formSlots?: any;
   ssr?: SSR;
   namesToRemember?: Record<string, string>;
-  includeLabel?: boolean;
+  collectDisplayValues?: boolean;
 };

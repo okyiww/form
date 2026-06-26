@@ -21,7 +21,7 @@ import {
   transformModelByRememberedNames,
   reverseTransformModelByRememberedNames,
 } from "@/helpers/namesToRemember";
-import { collectDisplayLabels, buildDisplayLabelConfig } from "@/core/services/collectDisplayLabels";
+import { collectDisplayValues } from "@/core/services/collectDisplayLabels";
 import { set } from "lodash";
 import { RawSchemas } from "@/helpers/defineFormSchema/types";
 
@@ -101,15 +101,13 @@ export default class Runtime {
           )
         : this._model.model.value;
 
-      if (this._options.includeLabel) {
-        const displayLabelConfig = buildDisplayLabelConfig(this._schema.rawSchemas ?? []);
-        const displayLabels = collectDisplayLabels(
+      if (this._options.collectDisplayValues) {
+        const displayValues = collectDisplayValues(
           this._schema.parsedSchemas.value,
           this._model.model.value,
-          this._adapter.adaptee,
-          displayLabelConfig
+          this._adapter.adaptee
         );
-        return { ...model, displayLabels };
+        return { result: model, displayValues };
       }
 
       return model;
