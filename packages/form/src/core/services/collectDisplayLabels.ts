@@ -2,10 +2,11 @@ import { ParsedSchemas } from "@/core/lifecycle/Schema/types";
 import { CustomAdapter } from "@/helpers/defineFormSetup/types";
 import { get, isArray, isNil, isObject, set } from "lodash";
 
+export type LabelMode = "leaf" | "path" | "parent";
+
 export type DisplayEntry = {
-  label: string;
+  label: string | string[];
   value: any;
-  path?: string[];
 };
 
 const KEY_CONVENTIONS: [string, string, string][] = [
@@ -15,13 +16,29 @@ const KEY_CONVENTIONS: [string, string, string][] = [
   ["id", "name", "children"],
 ];
 
+export function buildLabelModeConfig(
+  schemas: any[],
+  config: Record<string, LabelMode> = {}
+): Record<string, LabelMode> {
+  for (const schema of schemas) {
+    const type = schema.type ?? "item";
+    if (type === "group" || type === "list") {
+      buildLabelModeConfig(schema.children ?? [], config);
+    } else if (schema.field && schema.labelMode) {
+      config[schema.field] = schema.labelMode;
+    }
+  }
+  return config;
+}
+
 export function collectDisplayValues(
   parsedSchemas: ParsedSchemas,
   model: Record<string, any>,
-  adapter: CustomAdapter
+  adapter: CustomAdapter,
+  labelModeConfig: Record<string, LabelMode> = {}
 ): Record<string, any> {
   const flat: Record<string, DisplayEntry | DisplayEntry[]> = {};
-  walkSchemas(parsedSchemas, model, "", flat, adapter);
+  walkSchemas(parsedSchemas, model, "", flat, adapter, labelModeConfig);
 
   const nested: Record<string, any> = {};
   for (const [fieldPath, entry] of Object.entries(flat)) {
@@ -35,13 +52,14 @@ function walkSchemas(
   model: Record<string, any>,
   basePath: string,
   flat: Record<string, DisplayEntry | DisplayEntry[]>,
-  adapter: CustomAdapter
+  adapter: CustomAdapter,
+  labelModeConfig: Record<string, LabelMode>
 ) {
   for (const schema of schemas) {
     const type = schema.type ?? "item";
 
     if (type === "group") {
-      walkSchemas(schema.children ?? [], model, basePath, flat, adapter);
+      walkSchemas(schema.children ?? [], model, basePath, flat, adapter, labelModeConfig);
       continue;
     }
 
@@ -50,7 +68,7 @@ function walkSchemas(
       const listValue = get(model, listPath);
       if (isArray(listValue)) {
         listValue.forEach((_: any, index: number) => {
-          walkSchemas(schema.children ?? [], model, `${listPath}.${index}`, flat, adapter);
+          walkSchemas(schema.children ?? [], model, `${listPath}.${index}`, flat, adapter, labelModeConfig);
         });
       }
       continue;
@@ -62,7 +80,8 @@ function walkSchemas(
     const currentValue = get(model, fieldPath);
     if (isNil(currentValue)) continue;
 
-    const entry = resolveDisplayEntry(schema.componentProps, currentValue, adapter);
+    const mode: LabelMode = labelModeConfig[schema.field] ?? "leaf";
+    const entry = resolveDisplayEntry(schema.componentProps, currentValue, adapter, mode);
     if (entry !== null) {
       flat[fieldPath] = entry;
     }
@@ -72,7 +91,8 @@ function walkSchemas(
 function resolveDisplayEntry(
   componentProps: Record<string, any>,
   currentValue: any,
-  adapter: CustomAdapter
+  adapter: CustomAdapter,
+  mode: LabelMode
 ): DisplayEntry | DisplayEntry[] | null {
   const adapterKeys = adapter.resolveKeys?.(componentProps);
   const conventions: [string, string, string][] = adapterKeys
@@ -85,11 +105,11 @@ function resolveDisplayEntry(
     for (const [valueKey, labelKey, childrenKey] of conventions) {
       if (isArray(currentValue)) {
         const entries = currentValue
-          .map((v) => buildEntry(prop, v, valueKey, labelKey, childrenKey))
+          .map((v) => buildEntry(prop, v, valueKey, labelKey, childrenKey, mode))
           .filter((e): e is DisplayEntry => e !== null);
         if (entries.length) return entries;
       } else {
-        const entry = buildEntry(prop, currentValue, valueKey, labelKey, childrenKey);
+        const entry = buildEntry(prop, currentValue, valueKey, labelKey, childrenKey, mode);
         if (entry !== null) return entry;
       }
     }
@@ -103,13 +123,22 @@ function buildEntry(
   value: any,
   valueKey: string,
   labelKey: string,
-  childrenKey: string
+  childrenKey: string,
+  mode: LabelMode
 ): DisplayEntry | null {
-  const path = findAncestorPath(options, value, valueKey, labelKey, childrenKey);
-  if (!path?.length) return null;
-  const entry: DisplayEntry = { label: path[path.length - 1], value };
-  if (path.length > 1) entry.path = path;
-  return entry;
+  const fullPath = findAncestorPath(options, value, valueKey, labelKey, childrenKey);
+  if (!fullPath?.length) return null;
+
+  let label: string | string[];
+  if (mode === "leaf") {
+    label = fullPath[fullPath.length - 1];
+  } else if (mode === "parent") {
+    label = fullPath.slice(-2);
+  } else {
+    label = fullPath;
+  }
+
+  return { label, value };
 }
 
 function findAncestorPath(

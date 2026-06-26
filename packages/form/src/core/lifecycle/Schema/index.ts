@@ -80,6 +80,7 @@ export default class Schema {
           this.traverseSchemas(this.processSSR(cloneDeep(res)));
         });
       } else {
+        this.rawSchemas = cloneDeep(result);
         this.traverseSchemas(this.processSSR(cloneDeep(result)));
       }
     } else if (isPromise(this.runtime._options.schemas)) {
