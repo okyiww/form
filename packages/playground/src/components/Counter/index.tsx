@@ -15,7 +15,8 @@ export default defineComponent({
       () => count.value,
       (newVal) => {
         emit("update:modelValue", newVal);
-      }
+      },
+      { immediate: true }
     );
 
     watch(

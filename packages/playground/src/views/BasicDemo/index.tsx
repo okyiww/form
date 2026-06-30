@@ -9,11 +9,12 @@ export default defineComponent({
     console.log("the okyiww form version is", version);
 
     function getSchemas() {
-      return import("@/business/schemas/testan").then((res) => res.default);
+      return import("@/business/schemas/initial").then((res) => res.default);
     }
 
     const [Form, { submit, hydrate, schemas, share, isReady, getFormRef }] =
       useForm({
+        collectDisplayValues: true,
         schemas: getSchemas,
         formProps: {
           layout: "vertical",

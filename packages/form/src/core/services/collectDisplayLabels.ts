@@ -92,13 +92,17 @@ function walkSchemas(
 
     const fieldPath = basePath ? `${basePath}.${schema.field}` : schema.field;
     const currentValue = get(model, fieldPath);
-    if (isNil(currentValue)) continue;
-
     const mode: LabelMode = labelModeConfig[schema.field] ?? "leaf";
-    const entry =
-      (schema.componentProps
-        ? resolveDisplayEntry(schema.componentProps, currentValue, adapter, mode)
-        : null) ?? resolveDisplayEntryFromRef(refs.get(fieldPath), currentValue);
+
+    let entry: DisplayEntry | DisplayEntry[] | null = null;
+
+    if (!isNil(currentValue) && schema.componentProps) {
+      entry = resolveDisplayEntry(schema.componentProps, currentValue, adapter, mode);
+    }
+
+    if (entry === null) {
+      entry = resolveDisplayEntryFromRef(refs.get(fieldPath), currentValue);
+    }
 
     if (entry !== null) {
       flat[fieldPath] = entry;
