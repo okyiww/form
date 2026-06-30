@@ -107,7 +107,8 @@ export default class Runtime {
           this._schema.parsedSchemas.value,
           this._model.model.value,
           this._adapter.adaptee,
-          labelModeConfig
+          labelModeConfig,
+          this._schema.refs
         );
         return { result: model, displayValues };
       }

@@ -34,6 +34,12 @@ export default defineComponent({
         count.value--;
       },
       theRemark: "hello the remark",
+      getDisplayValue() {
+        return {
+          label: `计数: ${count.value}`,
+          value: count.value,
+        };
+      },
     });
     return () => <div>{count.value}</div>;
   },

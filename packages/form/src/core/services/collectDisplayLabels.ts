@@ -9,6 +9,10 @@ export type DisplayEntry = {
   value: any;
 };
 
+export type DisplayValueProvider = {
+  getDisplayValue?: () => DisplayEntry | DisplayEntry[] | null | undefined;
+};
+
 const KEY_CONVENTIONS: [string, string, string][] = [
   ["value", "label", "children"],
   ["key", "title", "children"],
@@ -35,10 +39,11 @@ export function collectDisplayValues(
   parsedSchemas: ParsedSchemas,
   model: Record<string, any>,
   adapter: CustomAdapter,
-  labelModeConfig: Record<string, LabelMode> = {}
+  labelModeConfig: Record<string, LabelMode> = {},
+  refs: Map<string, any> = new Map()
 ): Record<string, any> {
   const flat: Record<string, DisplayEntry | DisplayEntry[]> = {};
-  walkSchemas(parsedSchemas, model, "", flat, adapter, labelModeConfig);
+  walkSchemas(parsedSchemas, model, "", flat, adapter, labelModeConfig, refs);
 
   const nested: Record<string, any> = {};
   for (const [fieldPath, entry] of Object.entries(flat)) {
@@ -53,13 +58,14 @@ function walkSchemas(
   basePath: string,
   flat: Record<string, DisplayEntry | DisplayEntry[]>,
   adapter: CustomAdapter,
-  labelModeConfig: Record<string, LabelMode>
+  labelModeConfig: Record<string, LabelMode>,
+  refs: Map<string, any>
 ) {
   for (const schema of schemas) {
     const type = schema.type ?? "item";
 
     if (type === "group") {
-      walkSchemas(schema.children ?? [], model, basePath, flat, adapter, labelModeConfig);
+      walkSchemas(schema.children ?? [], model, basePath, flat, adapter, labelModeConfig, refs);
       continue;
     }
 
@@ -68,24 +74,78 @@ function walkSchemas(
       const listValue = get(model, listPath);
       if (isArray(listValue)) {
         listValue.forEach((_: any, index: number) => {
-          walkSchemas(schema.children ?? [], model, `${listPath}.${index}`, flat, adapter, labelModeConfig);
+          walkSchemas(
+            schema.children ?? [],
+            model,
+            `${listPath}.${index}`,
+            flat,
+            adapter,
+            labelModeConfig,
+            refs
+          );
         });
       }
       continue;
     }
 
-    if (!schema.field || !schema.componentProps) continue;
+    if (!schema.field) continue;
 
     const fieldPath = basePath ? `${basePath}.${schema.field}` : schema.field;
     const currentValue = get(model, fieldPath);
     if (isNil(currentValue)) continue;
 
     const mode: LabelMode = labelModeConfig[schema.field] ?? "leaf";
-    const entry = resolveDisplayEntry(schema.componentProps, currentValue, adapter, mode);
+    const entry =
+      (schema.componentProps
+        ? resolveDisplayEntry(schema.componentProps, currentValue, adapter, mode)
+        : null) ?? resolveDisplayEntryFromRef(refs.get(fieldPath), currentValue);
+
     if (entry !== null) {
       flat[fieldPath] = entry;
     }
   }
+}
+
+function resolveDisplayEntryFromRef(
+  componentRef: { value?: DisplayValueProvider } | undefined,
+  currentValue: any
+): DisplayEntry | DisplayEntry[] | null {
+  const instance = componentRef?.value;
+  if (!instance?.getDisplayValue) return null;
+
+  try {
+    return normalizeDisplayEntry(instance.getDisplayValue(), currentValue);
+  } catch {
+    return null;
+  }
+}
+
+function normalizeDisplayEntry(
+  result: DisplayEntry | DisplayEntry[] | null | undefined,
+  currentValue: any
+): DisplayEntry | DisplayEntry[] | null {
+  if (result == null) return null;
+
+  if (isArray(result)) {
+    const entries = result
+      .map((entry) => normalizeSingleDisplayEntry(entry, currentValue))
+      .filter((entry): entry is DisplayEntry => entry !== null);
+    return entries.length ? entries : null;
+  }
+
+  return normalizeSingleDisplayEntry(result, currentValue);
+}
+
+function normalizeSingleDisplayEntry(
+  entry: DisplayEntry,
+  currentValue: any
+): DisplayEntry | null {
+  if (!isObject(entry) || isArray(entry) || isNil(entry.label)) return null;
+
+  return {
+    label: entry.label,
+    value: entry.value === undefined ? currentValue : entry.value,
+  };
 }
 
 function resolveDisplayEntry(
